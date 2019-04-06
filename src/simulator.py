@@ -7,7 +7,7 @@ from PyQt5.uic import loadUi
 class testing_func(QDialog):
     def __init__(self):
         super(testing_func,self).__init__()
-        loadUi('pikapi.ui',self)
+        loadUi('../uis/simulator.ui',self)
         self.setWindowTitle('Simulator')
         self.button_map.clicked.connect(self.on_button_map_clicked)
         self.button_heatmap.clicked.connect(self.on_button_heatmap_clicked)
