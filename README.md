@@ -1,6 +1,8 @@
 # conversational_planning
 Conversational Planning
 
-Initial simulation environment based off of in-development work from Luke Burks.
+Custom simulation environment - run with python3
 
-Run src/interface.py
+Run src/simulator.py
+
+Beware: clicking 'generate heatmap' within the simulator currently causes the program to hang
