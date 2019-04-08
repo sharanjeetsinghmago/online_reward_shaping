@@ -110,11 +110,11 @@ def image2reward(image_file):
     fig.colorbar(im1, cax=cax1)
     ax1.plot(start[0], start[1], c='lime', marker='x')
     ax1.plot(goal[0], goal[1], c='gold', marker='o')
-    plt.savefig('image2reward_with_rrt.jpg')
+    plt.savefig('../img/image2reward_with_rrt.jpg')
 
 def main():
 
-    image2reward('atacama.png')
+    image2reward('../img/atacama.png')
 
 if __name__ == '__main__':
     main()

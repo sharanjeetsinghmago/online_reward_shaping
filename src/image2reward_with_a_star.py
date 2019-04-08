@@ -231,7 +231,7 @@ def main():
     image2reward 
     """
     # initialization of image and rewardMatrix
-    image_file = 'atacama.png'
+    image_file = '../img/atacama.png'
     img = cv2.imread(image_file)
     rewardMatrix = np.zeros((img.shape[0], img.shape[1]))
 #    print(rewardMatrix.shape) # (966, 1048)
@@ -307,7 +307,7 @@ def main():
     ax1.plot(sx, sy, c='lime', marker='x')
     ax1.plot(gx, gy, c='gold', marker='o')
     ax1.plot(rx, ry, "-g")
-    plt.savefig('image2reward_with_a_star.jpg')
+    plt.savefig('../img/image2reward_with_a_star.jpg')
     
 if __name__ == '__main__':
     main()    

@@ -21,11 +21,11 @@ class testing_func(QDialog):
         self.graphicsView.setScene(scene)
 
     def heatmap_clicked(self):
-        scene_2.addPixmap(QPixmap('image2reward_with_rrt.jpg'))
+        scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))
         self.graphicsView_2.setScene(scene_2)
 
     def generate_heatmap_clicked(self):
-        image2reward('atacama.png')
+        image2reward('../img/atacama.png')
 
 
 app=QApplication(sys.argv)
@@ -40,7 +40,7 @@ scene.addPixmap(pic)
 #scene.resize(50,50);
 
 scene_2 = QGraphicsScene()
-scene_2.addPixmap(QPixmap('image2reward_with_rrt.jpg'))
+scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))
 
 
 sys.exit(app.exec_())
