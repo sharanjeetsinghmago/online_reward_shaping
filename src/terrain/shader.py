@@ -5,12 +5,12 @@ Shader: abstract compilation and usage
 __all__ = ('ShaderException', 'Shader')
 
 # from pymt.logger import pymt_logger
-from ctypes import *
+from util import *
 from OpenGL.GL import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, \
         glCreateProgram, glGetUniformLocation, glUniform1i, \
         glUniform1f, glUniformMatrix4fv, glLinkProgram, glCreateShader, glUseProgram, \
         glAttachShader, glCompileShader, glShaderSource, \
-        glGetProgramInfoLog, glGetShaderInfoLog,  GL_FALSE
+        glGetProgramInfoLog, glGetShaderInfoLog,  GL_FALSE, GL_TRUE
 
 
 class ShaderException(Exception):
@@ -121,7 +121,7 @@ class Shader():
 
     def setMat4(self, name, value):
         location = glGetUniformLocation(self.program, name)
-        glUniformMatrix4fv(location,1, GL_FALSE,  value)
+        glUniformMatrix4fv(location,1, GL_FALSE,  value.data())
 
 
     def __setitem__(self, name, value):

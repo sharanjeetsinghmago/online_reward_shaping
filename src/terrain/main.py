@@ -4,10 +4,9 @@ import sys
 import math
 
 from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtGui import QColor, QVector3D
+from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
 from PyQt5.QtWidgets import *
 from PyQt5.QtOpenGL import QGL, QGLFormat, QGLWidget
-from pyrr import Matrix44, Vector3
 import numpy as np
 
 from camera import Camera
@@ -38,10 +37,11 @@ class GLWidget(QGLWidget):
 
     def initializeGL(self):
         GL.glClearColor(0.50, 0.50, 0.50, 1.0)
-        self.perspective = Matrix44.perspective_projection(self.fov, self.width / self.height, 0.01, 100)
-        self.cameraPos = Vector3([0.0, 0.1, 0.1])
-        self.terrainPos = Vector3([0.0, 0.0, 0.0])
-        self.roverPos = Vector3([0.0, 0.0, 0.0])
+        self.projection = QMatrix4x4()
+        self.projection.perspective(self.fov, self.width / self.height, 0.01, 100)
+        self.cameraPos = QVector3D(0.0, 0.1, 0.001)
+        self.terrainPos = QVector3D(0.0, 0.0, 0.0)
+        self.roverPos = QVector3D(0.0, 0.0, 0.0)
         print(GL.glGetString(GL.GL_VERSION))
         self.camera = Camera(self.cameraPos)
         self.terrain = Terrain(self.terrainPos)
@@ -51,7 +51,8 @@ class GLWidget(QGLWidget):
         self.width = float(w)
         self.height = float(h)
         GL.glViewport(0, 0, w, h)
-        self.perspective = Matrix44.perspective_projection(60.0, (self.width / self.height), 0.01, 100)
+        self.projection = QMatrix4x4()
+        self.projection.perspective(self.fov, (self.width / self.height), 0.01, 100)
 
 
     def paintGL(self):
@@ -62,7 +63,7 @@ class GLWidget(QGLWidget):
         GL.glEnable(GLWidget.GL_MULTISAMPLE)
        
         self.view = self.camera.getViewMatrix(self.roverPos)
-        self.terrain.draw(self.perspective, self.view)
+        self.terrain.draw(self.projection, self.view)
         # self.rover.draw(self.perspective, view)
 
 
@@ -83,7 +84,7 @@ class GLWidget(QGLWidget):
         
         winVector = QVector3D(winX, winY, winZ)
         print(winVector)
-        object_coord = self.terrain.getObjectCoord(winVector, self.perspective, self.view, viewport)
+        object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
         print(object_coord)
         # raw_z = GL.glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT);
         # print(raw_z)

@@ -7,7 +7,6 @@ from PyQt5.QtCore import QRect
 
 from shader import Shader
 from PIL import Image
-from pyrr import Matrix44, Vector3, matrix44
 
 import numpy as np
 class Terrain():
@@ -28,7 +27,6 @@ class Terrain():
 
         glBindVertexArray(self.__vao)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
         glDrawElements(GL_TRIANGLES, len(self.terrainIndices), GL_UNSIGNED_INT, None)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glBindVertexArray(0);
@@ -57,7 +55,7 @@ class Terrain():
         return 6*(vertexCount-1)*(vertexCount-1)
 
     def getVertices(self, vertexCount):
-        vertices = [0]*self.getVerticesCount(vertexCount)
+        vertices = [0.0]*self.getVerticesCount(vertexCount)
         vertexPointer = 0
         for i in range(vertexCount):
             for j in range(vertexCount):
@@ -68,7 +66,7 @@ class Terrain():
         return vertices
 
     def getIndices(self, vertexCount):
-        indices = [0]*self.getIndicesCount(vertexCount)
+        indices = [0.0]*self.getIndicesCount(vertexCount)
         pointer = 0
         for gz in range(vertexCount-1):
             for gx in range(vertexCount-1):
@@ -116,8 +114,10 @@ class Terrain():
         return textureID
 
     def getObjectCoord(self, windowPos, perspective, view, viewport):
-        modelView = matrix44.multiply(self.model, view)
-        objectCoord = windowPos.unproject(self.matrixTypeConversion(modelView), self.matrixTypeConversion(perspective), self.np2QRect(viewport))
+        modelView = QMatrix4x4()
+        modelView*=view
+        modelView*=self.model
+        objectCoord = windowPos.unproject(modelView, perspective, self.np2QRect(viewport))
         return objectCoord
 
     def matrixTypeConversion(self, matrix):
@@ -137,7 +137,9 @@ class Terrain():
         self.shader.use()
 
         # Set model matrix of terrain
-        self.model = Matrix44.from_translation(np.array(self.position))
+        # self.model = Matrix44.from_translation(np.array(self.position))
+        self.model = QMatrix4x4()
+        self.model.scale(1.0, 1.0, 1.0)
         self.shader.setMat4("model", self.model)
 
         # Create Vertex Array Object
@@ -153,7 +155,7 @@ class Terrain():
         
         # Turn on position attribute and set its size
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(ctypes.c_float), None)
 
         # Unbind buffers and VAO
         glBindBuffer(GL_ARRAY_BUFFER, 0)
