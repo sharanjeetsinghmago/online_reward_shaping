@@ -1,6 +1,6 @@
 import cv2
 from sklearn.linear_model import SGDClassifier
-from image2reward import main
+from color2reward import image2reward
 import matplotlib
 matplotlib.use('TKAgg')
 import matplotlib.pyplot as plt
@@ -31,7 +31,7 @@ def discrete_matshow(data, filename, vmin, vmax):
     #get discrete colormap
     cmap = plt.get_cmap('jet', (vmax - vmin))
     # set limits .5 outside true range
-    mat = plt.matshow(data,cmap=cmap,vmin = vmin, vmax = vmax)
+    mat = plt.matshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
     #tell the colorbar to tick at integers
     cax = plt.colorbar(mat, )
     plt.savefig(filename)
@@ -41,8 +41,8 @@ def unroll(img):
     return unrolledimg
 
 def phaselearning(phasetrans, phaseopaque, phaseno):
-    pactualrwd_trans = main(phasetrans)
-    pactualrwd_opaque = main(phaseopaque)
+    pactualrwd_trans = image2reward(phasetrans)
+    pactualrwd_opaque = image2reward(phaseopaque)
     ptactrwds_unrolled = pactualrwd_trans.ravel()
     pt_unrolled = unroll(phasetrans)
     sgdclass = SGDClassifier(warm_start=True).partial_fit(pt_unrolled, ptactrwds_unrolled,
@@ -67,9 +67,9 @@ def initial_train():
     star_cropped, star_downsampled, star_recreated = resize_crop(starredimg, dwnszval=10, saveimages=True, prec='star')
 
     # get the rewards for the downsampled and actual images
-    rwd_orig = main(orig_cropped)
-    rwd_dwnsamporig = main(orig_downsampled)
-    rwd_starred = main(star_cropped)
+    rwd_orig = image2reward(orig_cropped)
+    rwd_dwnsamporig = image2reward(orig_downsampled)
+    rwd_starred = image2reward(star_cropped)
 
     # create the reward maps
     discrete_matshow(rwd_orig, filename='rwdsorig.png', vmin=rwd_orig.min(), vmax=rwd_orig.max())
@@ -88,7 +88,7 @@ def initial_train():
     testimg_unroll = testimg.reshape((testimg.shape[0] * testimg.shape[1]), testimg.shape[2])
     testrwds_unroll = sgdclass.predict(testimg_unroll)
     testrwds = testrwds_unroll.reshape(testimg.shape[0], testimg.shape[1])
-    actrwds = main(testimg)
+    actrwds = image2reward(testimg)
     discrete_matshow(testrwds, filename='testrwdsfromrover.png', vmin=testrwds.min(), vmax=testrwds.max())
     discrete_matshow(actrwds, filename='testrwdsactual.png', vmin=actrwds.min(), vmax=actrwds.max())
 
@@ -97,7 +97,7 @@ def initial_train():
     testimgstarred_unroll = testimgstarred.reshape((testimgstarred.shape[0]*testimgstarred.shape[1]), testimgstarred.shape[2])
     testrwdsstarred_unroll = sgdclass.predict(testimgstarred_unroll)
     testrwdsstarred = testrwdsstarred_unroll.reshape(testimgstarred.shape[0], testimgstarred.shape[1])
-    actrwdsstarred = main(testimgstarred)
+    actrwdsstarred = image2reward(testimgstarred)
     actrwdsstarred_unroll = actrwdsstarred.ravel()
     discrete_matshow(testrwdsstarred, filename='testrwdsfromrover_starred.png', vmin=testrwdsstarred.min(), vmax=testrwdsstarred.max())
     discrete_matshow(actrwdsstarred, filename='testrwdsactual_starred.png', vmin=actrwdsstarred.min(), vmax=actrwdsstarred.max())
