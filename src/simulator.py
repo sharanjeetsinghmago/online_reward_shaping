@@ -107,7 +107,7 @@ def imageMouseRelease(QMouseEvent,wind):
         #wind.allSketches[tmp] = wind.allSketchPaths[-1];
         wind.sketchListen = False;
         wind.sketchingInProgress = False;
-        updateModels(wind,tmp,cost,speed);
+        #updateModels(wind,tmp,cost,speed);
 
 def makeTruePlane(wind):
 
@@ -140,6 +140,9 @@ def planeFlushPaint(planeWidget,points=[],col = None,pen=None):
 		painter.drawPoint(p[0],p[1]);
 	painter.end();
 	planeWidget.setPixmap(pm);
+
+def updateModels(wind,tmp,cost,speed):
+    pass
 
 def planeAddPaint(planeWidget,points=[],col=None,pen=None):
 
