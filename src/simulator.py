@@ -29,6 +29,27 @@ class simulation(QDialog):
         self.sketchDensity = 3; #radius in pixels of drawn sketch points
 
 
+        #A* Params
+        # initialization of the 2D grid environment
+        # start coordinate
+        self.sx = 50.0       # [m]
+        self.sy = 50.0       # [m]
+        # goal coordinate
+        self.gx = 1550.0      # [m]
+        self.gy = 1770.0     # [m]
+        # grid property
+        self.greso = 2.0     # [m]
+        # robot size (assume the robot size is 2*2 meters)
+        self.rs = 2.0        # [m]
+        # size of the whole environment (values are calculated based on image pixels)
+        self.minx = 0.0      # [m]
+        self.maxx = 2096.0   # [m]
+        self.miny = 0.0      # [m]
+        self.maxy = 1932.0   # [m]
+
+        self.xwidth = round(self.maxx - self.minx)
+
+
         #self.scene = None
         self.graphics()
 
