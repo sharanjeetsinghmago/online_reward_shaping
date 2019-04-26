@@ -23,11 +23,6 @@ class Camera():
 
     def getViewMatrix(self, roverPosition):
         view = QMatrix4x4()
-        # if(self.viewType == 0):
-        #     view.lookAt(roverPosition, roverPosition + self.Front, self.Up)
-        # elif(self.viewType == 1):
-        #     view.lookAt(self.position, roverPosition, self.Up)
-        # elif(self.viewType == 2):
         view.lookAt(self.position, self.position + self.Front, self.Up)
 
         return view
@@ -44,7 +39,6 @@ class Camera():
         self.Right.normalize()
         self.Up = QVector3D.crossProduct(self.Right, self.Front)
         self.Up.normalize()
-
 
     def scroll(self, angleDelta):
         self.position.setY(self.position.y() - self.delta_y * angleDelta)
@@ -81,13 +75,7 @@ class Camera():
         # print(int(0.5 * self.position.x() + 0.5))
         i = round(self.imageData.shape[0] - self.imageData.shape[0] * ((0.5 * self.position.z()/4000.5) + 0.5) )
         j = round( self.imageData.shape[1] * ((0.5 * self.position.x()/4000.5) + 0.5) )
-        print(self.position.x())
-        print(self.position.z())
-        print (i)
-        print (j)
         self.position.setY(0.015625 * self.imageData[i,j] + 2.0)
-        print(self.Front)
-        # print(self.position)
 
     def processInput():
         pass
