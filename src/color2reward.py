@@ -18,11 +18,6 @@ def color_detect(img): # assign reward value: -1
     # Hue [0, 179], Saturation [0, 255], Value [0, 255]
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    #stars
-    hsv_min_star = np.array([29,255,255])
-    hsv_max_star = np.array([29,255,255])
-    mask_star = cv2.inRange(hsv, hsv_min_star, hsv_max_star)
-
     # red region 1
     hsv_min_red = np.array([0, 127, 0])
     hsv_max_red = np.array([30, 255, 255])
@@ -69,6 +64,11 @@ def color_detect(img): # assign reward value: -1
     hsv_min_green = np.array([100, 150, 100])
     hsv_max_green = np.array([140, 255, 200])
     mask_green = cv2.inRange(hsv, hsv_min_green, hsv_max_green)
+    
+    #stars
+    hsv_min_star = np.array([29,255,255])
+    hsv_max_star = np.array([29,255,255])
+    mask_star = cv2.inRange(hsv, hsv_min_star, hsv_max_star)
 
     return mask_star, mask1_red+mask2_red, mask1_lgray+mask2_lgray, mask_dgray, mask1_spink+mask2_spink, mask_white, mask_yellow, mask_green
 
@@ -87,7 +87,6 @@ def image2reward(image_file, matvals=True):
     #print(mask_red.shape, mask_lgray.shape, mask_dgray.shape, mask_spink.shape)
 
     # from each mask *, extract the color regions
-    index_star = np.vstack((np.where(mask_star == 255)[0], np.where(mask_star == 255)[1]))
     index_red = np.vstack((np.where(mask_red == 255)[0], np.where(mask_red == 255)[1]))
     index_lgray = np.vstack((np.where(mask_lgray == 255)[0], np.where(mask_lgray == 255)[1]))
     index_dgray = np.vstack((np.where(mask_dgray == 255)[0], np.where(mask_dgray == 255)[1]))
@@ -95,11 +94,9 @@ def image2reward(image_file, matvals=True):
     index_white = np.vstack((np.where(mask_white == 255)[0], np.where(mask_white == 255)[1]))
     index_yellow = np.vstack((np.where(mask_yellow == 255)[0], np.where(mask_yellow == 255)[1]))
     index_green = np.vstack((np.where(mask_green == 255)[0], np.where(mask_green == 255)[1]))
+    index_star = np.vstack((np.where(mask_star == 255)[0], np.where(mask_star == 255)[1]))
 
     # add reward points to the initial reward heatmap (np.zeros((img.shape[0], img.shape[1])))
-    for i in range(index_star.shape[1]):
-        rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
-
     for i in range(index_yellow.shape[1]):
         rewardMatrix[index_yellow[0][i]][index_yellow[1][i]] = 1
 
@@ -120,6 +117,9 @@ def image2reward(image_file, matvals=True):
 
     for i in range(index_green.shape[1]):
         rewardMatrix[index_green[0][i]][index_green[1][i]] = 5
+    
+    for i in range(index_star.shape[1]):
+        rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
 
     return rewardMatrix
 
