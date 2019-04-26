@@ -3,14 +3,18 @@
 import sys
 import math
 
-from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
+from scipy.spatial import ConvexHull
+from PyQt5.QtCore import Qt, pyqtSlot, QTime
+from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4, QPainter, QColor, QPen
 from PyQt5.QtWidgets import *
 from PyQt5.QtOpenGL import QGL, QGLFormat, QGLWidget
+
 import numpy as np
+import cv2 as cv
 
 from camera import Camera
 from terrain import Terrain
+from sensorData import SensorData
 # import Rover
 try:
     from OpenGL import GL
@@ -25,7 +29,9 @@ class GLWidget(QGLWidget):
     GL_MULTISAMPLE = 0x809D
     rot = 0.0
     lastMousePos = None
+
     def __init__(self, parent, f):
+        
         super(GLWidget, self).__init__(f, parent)
         self.setFocusPolicy(Qt.StrongFocus)
         self.list_ = []
@@ -34,17 +40,28 @@ class GLWidget(QGLWidget):
         self.startTimer(40)
         self.setWindowTitle("Sample Buffers")
         self.fov = 60.0
+        self.deltaTime = 0.0
+        self.lastFrame = None
+        self.sketching = False
+        self.sketchPoints = []
+        # self.painter = QPainter()
+        # self.painter.begin(self)
+        # self.painter.setRenderHint(QPainter.Antialiasing)
+        # self.painter.setPen(Qt.red)
+        # self.painter.setBrush(Qt.white)
+ 
 
     def initializeGL(self):
         GL.glClearColor(0.50, 0.50, 0.50, 1.0)
         self.projection = QMatrix4x4()
-        self.projection.perspective(self.fov, self.width / self.height, 0.01, 100)
-        self.cameraPos = QVector3D(0.0, 0.1, 0.001)
+        self.projection.perspective(self.fov, self.width / self.height, 0.01, 10000)
+        self.cameraPos = QVector3D(0.0, 1.0, 1.0)
         self.terrainPos = QVector3D(0.0, 0.0, 0.0)
         self.roverPos = QVector3D(0.0, 0.0, 0.0)
         print(GL.glGetString(GL.GL_VERSION))
         self.camera = Camera(self.cameraPos)
         self.terrain = Terrain(self.terrainPos)
+        # self.sensorData = SensorData(self.terrainPos)
         # self.rover = Rover(roverPos)
 
     def resizeGL(self, w, h):
@@ -52,10 +69,16 @@ class GLWidget(QGLWidget):
         self.height = float(h)
         GL.glViewport(0, 0, w, h)
         self.projection = QMatrix4x4()
-        self.projection.perspective(self.fov, (self.width / self.height), 0.01, 100)
+        self.projection.perspective(self.fov, (self.width / self.height), 0.01, 10000)
 
 
     def paintGL(self):
+        currentFrame = QTime.currentTime()
+        if (self.lastFrame):
+            self.deltaTime = self.lastFrame.msecsTo(currentFrame)
+            self.lastFrame = currentFrame
+        else:
+            self.lastFrame = currentFrame
         GL.glClearColor(0.90, 0.90, 0.90, 1.0)
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -65,47 +88,111 @@ class GLWidget(QGLWidget):
         self.view = self.camera.getViewMatrix(self.roverPos)
         self.terrain.draw(self.projection, self.view)
         # self.rover.draw(self.perspective, view)
-
+        # self.sensorData.draw(self.projection, self.view)
 
         # self.qglColor(Qt.black)
         # self.renderText(-0.35, 0.4, 0.0, "Multisampling enabled")
         # self.renderText(0.15, 0.4, 0.0, "Multisampling disabled")
 
     def mousePressEvent(self, event):
-        print("clicked")
         viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
-        cursorX = event.x()
-        cursorY = event.y()
-        winX = float(cursorX)
-        winY = float(viewport[3] - cursorY)
-        
-        # obtain Z position
-        winZ = GL.glReadPixels(winX, winY, 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
-        
-        winVector = QVector3D(winX, winY, winZ)
-        print(winVector)
-        object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
-        print(object_coord)
+
+        if(self.sketching):
+            self.sketchPoints.append([event.x(), viewport[3] - event.y()])
+        else:
+            self.lastMousePos = event.pos()
+            print("clicked")
+            cursorX = event.x()
+            cursorY = event.y()
+            winX = float(cursorX)
+            winY = float(viewport[3] - cursorY)
+            
+            # obtain Z position
+            winZ = GL.glReadPixels(winX, winY, 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
+            
+            winVector = QVector3D(winX, winY, winZ)
+            print(winVector)
+            object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
+            print(object_coord)
         # raw_z = GL.glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT);
         # print(raw_z)
 
     def mouseMoveEvent(self, event):
-        print(event.pos())
+        # print(event.pos())
+        
         if(event.button() == Qt.LeftButton):
-            if(self.lastMousePos is not None):
+            viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
+
+            if(self.sketching):
+                self.sketchPoints.append([event.x(), viewport[3] - event.y()])
+                # self.painter.drawPoint(event.pos())
+            elif(self.lastMousePos is not None):
                 dx = event.x() - self.lastMousePos.x()
                 dy = event.y() - self.lastMousePos.y()
                 self.camera.processMouseMovement(dx,dy)
-            self.lastMousePos = event.pos()
-        elif(event.button() == Qt.MiddleButton):
-            # Dont use this : doesnt work well with trackpads
-            print("Middle")
-        elif(event.button() == Qt.RightButton):
-            print("Right")
+                self.lastMousePos = event.pos()
+            elif(event.button() == Qt.MiddleButton):
+                # Dont use this : doesnt work well with trackpads
+                print("Middle")
+            elif(event.button() == Qt.RightButton):
+                print("Right")
 
     def mouseReleaseEvent(self, event):
         print("Mouse Released")
+        if(self.sketching):
+            # print(self.sketchPoints)
+            self.createSketchMask()
+            self.sketching = False
         
+    def createSketchMask(self):
+        # obtain Z position
+        pixels = []
+        viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
+        mask = np.zeros([2001,2001])
+        for point in self.sketchPoints:
+            winZ = GL.glReadPixels(point[0], point[1], 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
+        
+            winVector = QVector3D(point[0], point[1], winZ)
+            # print(winVector)
+            object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
+            print(object_coord)
+            i = round(2001 - 2001 * ((0.5 * object_coord[2]) + 0.5) )
+            j = round( 2001 * ((0.5 * object_coord[0]) + 0.5) )
+            pixels.append([i,j])
+            # mask[i,j] = 1
+        # image  = cv.imfill(mask, 'holes')
+        pixelsNP = np.array([pixels])
+        # print(pixelsNP)
+        # print(np.sum(mask))
+        cv.drawContours(mask, pixelsNP, 0, [1], -1)
+        # print(np.sum(mask))
+        imS = cv.resize(mask, (500,500))
+        cv.imshow('mask',imS)
+        cv.waitKey(0)
+        # print(image)
+        # hull = ConvexHull(pixels, incremental = True)
+        # hull2 = ConvexHull(pixels, incremental = True)
+
+        # print('Min Max i')
+        # print(pixelsNP[0].min())
+        # print (pixelsNP[0].max())
+        # 
+        # self.sketchPoints  = []
+        # for I in range(pixelsNP[0].min(), pixelsNP[0].max()):
+        #     for J in range(pixelsNP[1].min(), pixelsNP[1].max()):
+        #         hull2.add_points([[I,J]])
+        #         if(abs(hull.area-hull2.area)<0.01):
+        #             mask[I,J]=1
+        #         else:
+        #             print('point Rejected')
+
+                    
+        print(mask)
+        # print(hull)
+
+        
+
+            
     def wheelEvent(self, event):
         self.camera.scroll((event.angleDelta().y()))
 
@@ -117,6 +204,16 @@ class GLWidget(QGLWidget):
             self.camera.setViewType(1)
         elif event.key() == Qt.Key_3:
             self.camera.setViewType(2)
+        elif event.key() == Qt.Key_4:
+            self.sketching = True
+        elif event.key() == Qt.Key_W:
+            self.camera.processKeyboard('F', self.deltaTime)
+        elif event.key() == Qt.Key_S:
+            self.camera.processKeyboard('B', self.deltaTime)
+        elif event.key() == Qt.Key_A:
+            self.camera.processKeyboard('L', self.deltaTime)
+        elif event.key() == Qt.Key_D:
+            self.camera.processKeyboard('R', self.deltaTime)
             
         
     def timerEvent(self, event):

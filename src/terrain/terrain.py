@@ -6,12 +6,12 @@ from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
 from PyQt5.QtCore import QRect
 
 from shader import Shader
-from PIL import Image
+from textures import ReadHeightMap, ReadTexture
 
 import numpy as np
 class Terrain():
-
-    vertexCount = 200
+     
+    vertexCount = 502
     terrainVertices = []
     terrainIndices = []
 
@@ -38,7 +38,7 @@ class Terrain():
         glActiveTexture(GL_TEXTURE1)
         glBindTexture(GL_TEXTURE_2D, self.heightMap)
         self.shader.setInt("heightMap", 1)
-
+        self.shader.stop()
         # glActiveTexture(GL_TEXTURE1);
         # glBindTexture(GL_TEXTURE_2D, heightMap);
         # shader->setInt("heightMap", 1);
@@ -88,30 +88,7 @@ class Terrain():
                 pointer = pointer+1
         return indices
 
-    def ReadTexture(self, filename):
-        # PIL can open BMP, EPS, FIG, IM, JPEG, MSP, PCX, PNG, PPM
-        # and other file types.  We convert into a texture using GL.
-        print('trying to open', filename)
-        try:
-            image = Image.open(filename)
-        except IOError as ex:
-            print('IOError: failed to open texture file')
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            return -1
-        print('opened file: size=', image.size, 'format=', image.format)
-        imageData = np.array(list(image.getdata()), np.uint8)
 
-        textureID = glGenTextures(1)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 4)
-        glBindTexture(GL_TEXTURE_2D, textureID)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.size[0], image.size[1],
-            0, GL_RGB, GL_UNSIGNED_BYTE, imageData)
-
-        image.close()
-        return textureID
 
     def getObjectCoord(self, windowPos, perspective, view, viewport):
         modelView = QMatrix4x4()
@@ -130,7 +107,7 @@ class Terrain():
 
         # Set up vertices and indices
         self.terrainVertices = np.array(self.getVertices(self.vertexCount), dtype='float32')
-        self.terrainIndices = np.array(self.getIndices(self.vertexCount), dtype='uint16')
+        self.terrainIndices = np.array(self.getIndices(self.vertexCount), dtype='uint32')
 
         # Setup shaders
         self.shader = Shader(vertex_source="shaders/terrain.vs", fragment_source="shaders/terrain.fs")
@@ -139,7 +116,7 @@ class Terrain():
         # Set model matrix of terrain
         # self.model = Matrix44.from_translation(np.array(self.position))
         self.model = QMatrix4x4()
-        self.model.scale(1.0, 1.0, 1.0)
+        self.model.scale(4000.5, 1.0, 4000.5)
         self.shader.setMat4("model", self.model)
 
         # Create Vertex Array Object
@@ -160,11 +137,12 @@ class Terrain():
         # Unbind buffers and VAO
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0);
-        self.shader.stop()
 
         # Setup textures
-        self.colors = self.ReadTexture("textures/atacama_rgb.jpg")
-        self.heightMap = self.ReadTexture("textures/atacama_height.png")
+        self.colors = ReadTexture("textures/atacama_rgb.jpg")
+        self.heightMap = ReadHeightMap("textures/atacama_height.png")
+        self.shader.stop()
+
 
 
     
