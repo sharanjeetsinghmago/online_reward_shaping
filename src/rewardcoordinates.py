@@ -20,7 +20,7 @@ def colorcoord(img):
 
     rwd, yellowidx = image2reward(imgmat)
 
-    discrete_matshow(rwd, filename='atacamafullrewards/AArwdsall.png', vmin=rwd.min(), vmax=rwd.max())
+    # discrete_matshow(rwd, filename='atacamafullrewards/AArwdsall.png', vmin=rwd.min(), vmax=rwd.max())
 
     return yellowidx
 
