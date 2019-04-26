@@ -152,6 +152,8 @@ def image2reward(image_file):
     ax1.plot(goal[0], goal[1], c='gold', marker='o')
     plt.savefig('../img/image2reward_with_rrt.png')
 
+    return rewardMatrix
+
 def main():
 
     image2reward('../img/atacamaTexture1001.png')

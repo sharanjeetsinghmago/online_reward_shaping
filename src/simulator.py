@@ -1,9 +1,12 @@
 import sys
+from PIL import Image
+from PIL.ImageQt import ImageQt
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.uic import loadUi
+import scipy
 
 from image2reward import *;
 from image2reward_with_a_star import a_star_planning;
@@ -13,7 +16,7 @@ class simulation(QDialog):
         super(simulation,self).__init__()
         loadUi('../uis/simulator.ui',self)
         self.setWindowTitle('Simulator')
-        self.button_map.clicked.connect(self.map_clicked)
+
         self.button_heatmap.clicked.connect(self.heatmap_clicked)
         self.button_generate_heatmap.clicked.connect(self.generate_heatmap_clicked)
         self.button_generate_path.clicked.connect(self.generate_path_clicked)
@@ -28,8 +31,8 @@ class simulation(QDialog):
         self.sketchLabels = {};
         self.sketchDensity = 3; #radius in pixels of drawn sketch points
 
-        img = cv2.imread('../img/atacama.png')
-        self.rewardMatrix = 0
+        img = cv2.imread('../img/atacamaTexture1001.png')
+        self.rewardMatrix = np.zeros((img.shape[0], img.shape[1]))
 
         #A* Params
         # initialization of the 2D grid environment
@@ -54,7 +57,7 @@ class simulation(QDialog):
         self.rx = 0.0
         self.ry = 0.0
 
-        #self.scene = None
+
         self.graphics()
 
         self.scene1.mousePressEvent = lambda event:imageMousePress(event,self)
@@ -72,18 +75,27 @@ class simulation(QDialog):
         makeTruePlane(self)
 
     @pyqtSlot()
-    def map_clicked(self):
-        self.graphicsView.setScene(self.scene1)
+
 
     def heatmap_clicked(self):
-        scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))
+        print("<<Loading Heatmap>>")
+        scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.png'))
         self.graphicsView_2.setScene(scene_2)
+        print("<<Loading heatmap complete>>")
 
     def generate_heatmap_clicked(self):
-        self.rewardMatrix = image2reward('../img/atacama_texture.jpg')
+        print("<<Generating Heatmap>>")
+        self.rewardMatrix = image2reward('../img/atacamaTexture1001.png')
+        print("<<Heatmap Generated>>")
+        #print("<<Loading Heatmap>>")
+        #scene_2.addPixmap(QPixmap(self.rewardMatrix))
+        #self.graphicsView_2.setScene(scene_2)
+        #print("<<Loading Heatmap complete>>")
 
     def generate_path_clicked(self):
         self.rx, self.ry = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
+        
+
 
 def imageMousePress(QMouseEvent,wind):
     print("MouseClicked")
@@ -137,7 +149,7 @@ def imageMouseRelease(QMouseEvent,wind):
 
 def makeTruePlane(wind):
 
-	wind.trueImage = QPixmap('../img/atacama.png');
+	wind.trueImage = QPixmap('../img/atacamaTexture1001.png');
 	wind.imgWidth = wind.trueImage.size().width();
 	wind.imgHeight = wind.trueImage.size().height();
 
@@ -191,13 +203,8 @@ app=QApplication(sys.argv)
 widget=simulation()
 widget.show()
 
-'''
-scene = QGraphicsScene()
-scene.addPixmap(QPixmap('../img/atacama.png'))
-#scene.resize(50,50);
-'''
 scene_2 = QGraphicsScene()
-scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))
+#scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))
 
 
 sys.exit(app.exec_())
