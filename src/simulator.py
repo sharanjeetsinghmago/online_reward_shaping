@@ -6,7 +6,7 @@ from PyQt5.QtGui import *
 from PyQt5.uic import loadUi
 
 from image2reward import *;
-
+from image2reward_with_a_star import a_star_planning;
 
 class simulation(QDialog):
     def __init__(self):
@@ -16,7 +16,7 @@ class simulation(QDialog):
         self.button_map.clicked.connect(self.map_clicked)
         self.button_heatmap.clicked.connect(self.heatmap_clicked)
         self.button_generate_heatmap.clicked.connect(self.generate_heatmap_clicked)
-
+        self.button_generate_path.clicked.connect(self.generate_path_clicked)
 
         #Sketching Params
         self.sketchListen=False;
@@ -28,6 +28,8 @@ class simulation(QDialog):
         self.sketchLabels = {};
         self.sketchDensity = 3; #radius in pixels of drawn sketch points
 
+        img = cv2.imread('../img/atacama.png')
+        self.rewardMatrix = 0
 
         #A* Params
         # initialization of the 2D grid environment
@@ -49,6 +51,8 @@ class simulation(QDialog):
 
         self.xwidth = round(self.maxx - self.minx)
 
+        self.rx = 0.0
+        self.ry = 0.0
 
         #self.scene = None
         self.graphics()
@@ -69,16 +73,17 @@ class simulation(QDialog):
 
     @pyqtSlot()
     def map_clicked(self):
-        self.graphicsView.setScene(scene)
+        self.graphicsView.setScene(self.scene1)
 
     def heatmap_clicked(self):
         scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))
         self.graphicsView_2.setScene(scene_2)
 
     def generate_heatmap_clicked(self):
-        image2reward('../img/atacama.png')
+        self.rewardMatrix = image2reward('../img/atacama_texture.jpg')
 
-
+    def generate_path_clicked(self):
+        self.rx, self.ry = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
 
 def imageMousePress(QMouseEvent,wind):
     print("MouseClicked")
