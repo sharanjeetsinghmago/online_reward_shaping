@@ -20,10 +20,8 @@ def colorcoord(img):
 
     rwd, yellowidx = image2reward(imgmat)
 
-    # discrete_matshow(rwd, filename='atacamafullrewards/AArwdsall.png', vmin=rwd.min(), vmax=rwd.max())
-
-    np.save(starscoord, yellowidx)
+    discrete_matshow(rwd, filename='atacamafullrewards/AArwdsall.png', vmin=rwd.min(), vmax=rwd.max())
 
     return yellowidx
 
-starscoord = colorcoord('../img/atacama_starsonly.png')
+starscoord = colorcoord('../img/atacamastarsonly2001.png')
