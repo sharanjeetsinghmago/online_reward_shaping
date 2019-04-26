@@ -133,9 +133,9 @@ def goals(image_file):
 
     # initialization (grids)
     # grid configuration
-    minx = 0.0; maxx = 2400.0
-    miny = 0.0; maxy = 2400.0;
-    greso = 2.0
+    minx = 0.0; maxx = 1001.0
+    miny = 0.0; maxy = 1001.0;
+    greso = 1.0
 
     # robot states
     # initial start
@@ -164,7 +164,7 @@ def goals(image_file):
 def main():
 
     # image2reward('../img/atacama.png')
-    goals('../img/atacama_texture.jpg')
+    goals('../img/atacamaTexture1001.png')
 
 if __name__ == '__main__':
     main()

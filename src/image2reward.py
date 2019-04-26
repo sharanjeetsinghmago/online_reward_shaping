@@ -124,9 +124,9 @@ def image2reward(image_file):
 
     # initialization (grids)
     # grid configuration
-    minx = 0.0; maxx = 2400.0
-    miny = 0.0; maxy = 2400.0;
-    greso = 2.0
+    minx = 0.0; maxx = 1001.0
+    miny = 0.0; maxy = 1001.0;
+    greso = 1.0
 
     # robot states
     # initial start
@@ -150,11 +150,11 @@ def image2reward(image_file):
     fig.colorbar(im1, cax=cax1)
     ax1.plot(start[0], start[1], c='lime', marker='x')
     ax1.plot(goal[0], goal[1], c='gold', marker='o')
-    plt.savefig('../img/image2reward_with_rrt_tmp.png')
+    plt.savefig('../img/image2reward_with_rrt.png')
 
 def main():
 
-    image2reward('../img/atacama_texture.jpg')
+    image2reward('../img/atacamaTexture1001.png')
 
 if __name__ == '__main__':
     main()
