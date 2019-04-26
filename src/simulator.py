@@ -9,7 +9,7 @@ from PyQt5.uic import loadUi
 import scipy
 
 from image2reward import *;
-from image2reward_with_a_star import a_star_planning;
+from a_star_with_costmap import a_star_planning;
 
 class simulation(QDialog):
     def __init__(self):
@@ -40,17 +40,17 @@ class simulation(QDialog):
         self.sx = 50.0       # [m]
         self.sy = 50.0       # [m]
         # goal coordinate
-        self.gx = 1550.0      # [m]
-        self.gy = 1770.0     # [m]
+        self.gx = 650.0      # [m]
+        self.gy = 800.0     # [m]
         # grid property
-        self.greso = 2.0     # [m]
+        self.greso = 1.0     # [m]
         # robot size (assume the robot size is 2*2 meters)
-        self.rs = 2.0        # [m]
+        self.rs = 1.0        # [m]
         # size of the whole environment (values are calculated based on image pixels)
         self.minx = 0.0      # [m]
-        self.maxx = 2096.0   # [m]
+        self.maxx = 1001.0   # [m]
         self.miny = 0.0      # [m]
-        self.maxy = 1932.0   # [m]
+        self.maxy = 1001.0   # [m]
 
         self.xwidth = round(self.maxx - self.minx)
 
@@ -93,9 +93,29 @@ class simulation(QDialog):
         #print("<<Loading Heatmap complete>>")
 
     def generate_path_clicked(self):
-        self.rx, self.ry = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
-        
+        self.rx, self.ry, self.costMatrix, self.accumReward = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
 
+        self.xgrid_show, self.ygrid_show = np.mgrid[self.minx:self.maxx+self.greso:self.greso, self.miny:self.maxy+self.greso:self.greso]
+
+        fig = plt.figure(figsize=(20,20))
+
+        ax1 = fig.add_subplot(111)
+        ax1.set_xlim(self.minx - 1, self.maxx + 1); ax1.set_ylim(self.miny - 1, self.maxy + 1)
+        ax1.set_aspect('equal')
+        ax1.set_xlabel('x [m]'); ax1.set_ylabel('y [m]')
+        ax1.set_title('Initial Heat Map with a* path plan')
+        im1 = ax1.pcolor(self.xgrid_show, self.ygrid_show, self.rewardMatrix, cmap='plasma', vmin=-5.0, vmax=10.0)
+        ax1_divider = make_axes_locatable(ax1)
+        cax1 = ax1_divider.append_axes("right", size="7%", pad="2%")
+        fig.colorbar(im1, cax=cax1)
+        ax1.plot(self.sx, self.sy, c='darkgreen', marker='x')
+        ax1.plot(self.gx, self.gy, c='darkgreen', marker='o')
+        ax1.plot(self.rx, self.ry, "-k", linewidth=3)
+        ax1.text(650, 950, "total reward: " + str(int(self.accumReward)), size = 15, weight="bold", color = "w" )
+
+        print("<<saving the plot>>")
+        plt.savefig('a*_path_plan_based_on_reward_pika.jpg')
+        print("<<finish>>")
 
 def imageMousePress(QMouseEvent,wind):
     print("MouseClicked")
