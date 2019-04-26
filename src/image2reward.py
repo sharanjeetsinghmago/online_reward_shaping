@@ -31,11 +31,11 @@ def color_detect(img): # assign reward value: -1
     hsv_min_red = np.array([179, 255, 255])
     mask2_red = cv2.inRange(hsv, hsv_min_red, hsv_max_red)
 
-    # light gray region
+    # light gray region 1
     hsv_min_lgray = np.array([0, 0, 160])
     hsv_max_lgray = np.array([100, 20, 255])
     mask1_lgray = cv2.inRange(hsv, hsv_min_lgray, hsv_max_lgray)
-
+    # light gray region 2
     hsv_min_lgray = np.array([10, 0, 120])
     hsv_max_lgray = np.array([20, 50, 180])
     mask2_lgray = cv2.inRange(hsv, hsv_min_lgray, hsv_max_lgray)
