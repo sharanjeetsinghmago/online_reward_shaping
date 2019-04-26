@@ -3,7 +3,6 @@
 import sys
 import math
 
-from scipy.spatial import ConvexHull
 from PyQt5.QtCore import Qt, pyqtSlot, QTime
 from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4, QPainter, QColor, QPen
 from PyQt5.QtWidgets import *
@@ -44,11 +43,6 @@ class GLWidget(QGLWidget):
         self.lastFrame = None
         self.sketching = False
         self.sketchPoints = []
-        # self.painter = QPainter()
-        # self.painter.begin(self)
-        # self.painter.setRenderHint(QPainter.Antialiasing)
-        # self.painter.setPen(Qt.red)
-        # self.painter.setBrush(Qt.white)
  
 
     def initializeGL(self):
@@ -72,6 +66,7 @@ class GLWidget(QGLWidget):
         self.projection.perspective(self.fov, (self.width / self.height), 0.01, 10000)
 
 
+           
     def paintGL(self):
         currentFrame = QTime.currentTime()
         if (self.lastFrame):
@@ -87,12 +82,7 @@ class GLWidget(QGLWidget):
        
         self.view = self.camera.getViewMatrix(self.roverPos)
         self.terrain.draw(self.projection, self.view)
-        # self.rover.draw(self.perspective, view)
-        # self.sensorData.draw(self.projection, self.view)
-
-        # self.qglColor(Qt.black)
-        # self.renderText(-0.35, 0.4, 0.0, "Multisampling enabled")
-        # self.renderText(0.15, 0.4, 0.0, "Multisampling disabled")
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
 
     def mousePressEvent(self, event):
         viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
@@ -112,10 +102,6 @@ class GLWidget(QGLWidget):
             
             winVector = QVector3D(winX, winY, winZ)
             print(winVector)
-            object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
-            print(object_coord)
-        # raw_z = GL.glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT);
-        # print(raw_z)
 
     def mouseMoveEvent(self, event):
         # print(event.pos())
@@ -146,6 +132,7 @@ class GLWidget(QGLWidget):
         
     def createSketchMask(self):
         # obtain Z position
+        # pass
         pixels = []
         viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
         mask = np.zeros([2001,2001])
@@ -159,36 +146,10 @@ class GLWidget(QGLWidget):
             i = round(2001 - 2001 * ((0.5 * object_coord[2]) + 0.5) )
             j = round( 2001 * ((0.5 * object_coord[0]) + 0.5) )
             pixels.append([i,j])
-            # mask[i,j] = 1
-        # image  = cv.imfill(mask, 'holes')
         pixelsNP = np.array([pixels])
-        # print(pixelsNP)
-        # print(np.sum(mask))
+     
         cv.drawContours(mask, pixelsNP, 0, [1], -1)
-        # print(np.sum(mask))
-        imS = cv.resize(mask, (500,500))
-        cv.imshow('mask',imS)
-        cv.waitKey(0)
-        # print(image)
-        # hull = ConvexHull(pixels, incremental = True)
-        # hull2 = ConvexHull(pixels, incremental = True)
 
-        # print('Min Max i')
-        # print(pixelsNP[0].min())
-        # print (pixelsNP[0].max())
-        # 
-        # self.sketchPoints  = []
-        # for I in range(pixelsNP[0].min(), pixelsNP[0].max()):
-        #     for J in range(pixelsNP[1].min(), pixelsNP[1].max()):
-        #         hull2.add_points([[I,J]])
-        #         if(abs(hull.area-hull2.area)<0.01):
-        #             mask[I,J]=1
-        #         else:
-        #             print('point Rejected')
-
-                    
-        print(mask)
-        # print(hull)
 
         
 

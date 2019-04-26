@@ -20,6 +20,7 @@ class ShaderException(Exception):
 class Shader():
 
     def __init__(self, vertex_source=None, fragment_source=None):
+        print("In Shader File")
         self.program = glCreateProgram()
         vertex_file = open(vertex_source, "r")
         fragment_file = open(fragment_source, "r")
