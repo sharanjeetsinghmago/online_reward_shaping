@@ -24,4 +24,5 @@ def colorcoord(img):
 
     return yellowidx
 
-starscoord = colorcoord('../img/atacamastarsonly2001.png')
+starscoord = colorcoord('../img/atacamastarsonly1001.png')
+
