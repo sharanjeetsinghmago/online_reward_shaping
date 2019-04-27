@@ -33,11 +33,6 @@ def color_detect(img):
     # Hue [0, 179], Saturation [0, 255], Value [0, 255]
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     
-    #stars
-    hsv_min_star = np.array([29,255,255])
-    hsv_max_star = np.array([29,255,255])
-    mask_star = cv2.inRange(hsv, hsv_min_star, hsv_max_star)
-
     # red region 1
     hsv_min_red = np.array([0, 127, 0])
     hsv_max_red = np.array([30, 255, 255])
@@ -84,6 +79,11 @@ def color_detect(img):
     hsv_min_green = np.array([100, 150, 100])
     hsv_max_green = np.array([140, 255, 200])
     mask_green = cv2.inRange(hsv, hsv_min_green, hsv_max_green)
+    
+    #stars
+    hsv_min_star = np.array([29,255,255])
+    hsv_max_star = np.array([29,255,255])
+    mask_star = cv2.inRange(hsv, hsv_min_star, hsv_max_star)
 
     return mask_star, mask1_red+mask2_red, mask1_lgray+mask2_lgray, mask_dgray, mask1_spink+mask2_spink, mask_white, mask_yellow, mask_green
 
@@ -189,7 +189,7 @@ def a_star_planning(sx, sy, gx, gy, rewardMatrix, greso, rs, xwidth, minx, miny,
     # cost map
     costMatrix = ((rewardMatrix * -1) + 10).flatten()
     
-    costMatrix[501000] = -1000    
+#    costMatrix[501000] = -1000    
 
     
     # initialize the start & goal nodes
@@ -296,7 +296,7 @@ def main():
     """
     # initialization of image and rewardMatrix
     # 1001 * 1001 pixels
-    image_file = '1001atacamastarsall.png'
+    image_file = 'atacamaTexture1001.png'
     img = cv2.imread(image_file)
     rewardMatrix = np.zeros((img.shape[0], img.shape[1]))
     
@@ -304,7 +304,6 @@ def main():
     mask_star, mask_red, mask_lgray, mask_dgray, mask_spink, mask_white, mask_yellow, mask_green = color_detect(img)
 
     # by using each mask, extract the specific color regions 
-    index_star = np.vstack((np.where(mask_star == 255)[0], np.where(mask_star == 255)[1]))
     index_red = np.vstack((np.where(mask_red == 255)[0], np.where(mask_red == 255)[1]))
     index_lgray = np.vstack((np.where(mask_lgray == 255)[0], np.where(mask_lgray == 255)[1]))
     index_dgray = np.vstack((np.where(mask_dgray == 255)[0], np.where(mask_dgray == 255)[1]))
@@ -312,11 +311,9 @@ def main():
     index_white = np.vstack((np.where(mask_white == 255)[0], np.where(mask_white == 255)[1]))
     index_yellow = np.vstack((np.where(mask_yellow == 255)[0], np.where(mask_yellow == 255)[1]))
     index_green = np.vstack((np.where(mask_green == 255)[0], np.where(mask_green == 255)[1]))
+    index_star = np.vstack((np.where(mask_star == 255)[0], np.where(mask_star == 255)[1]))
 
     # add reward values to the reward heatmap based on the above color (np.zeros((img.shape[0], img.shape[1])))
-    for i in range(index_star.shape[1]):
-        rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
-
     for i in range(index_yellow.shape[1]):
         rewardMatrix[index_yellow[0][i]][index_yellow[1][i]] = 1
 
@@ -336,7 +333,10 @@ def main():
         rewardMatrix[index_white[0][i]][index_white[1][i]] = 2
 
     for i in range(index_green.shape[1]):
-        rewardMatrix[index_green[0][i]][index_green[1][i]] = 5         
+        rewardMatrix[index_green[0][i]][index_green[1][i]] = 5 
+        
+    for i in range(index_star.shape[1]):
+        rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
 
     # from "pixel coordinate" to "xy coordinate" 
     # below this line, we must use this 'rewardMatrix'
@@ -389,7 +389,7 @@ def main():
     ax1.plot(sx, sy, c='darkgreen', marker='x')
     ax1.plot(gx, gy, c='darkgreen', marker='o')
     ax1.plot(rx, ry, "-k", linewidth=3)
-    ax1.text(650, 950, "total reward: " + str(int(accumReward)), size = 15, weight="bold", color = "w" )
+    ax1.text(600, 950, "total reward: " + str(int(accumReward)), size = 15, weight="bold", color = "w" )
     
     
     ax2 = fig.add_subplot(122)
@@ -402,12 +402,12 @@ def main():
     ax2_divider = make_axes_locatable(ax2)
     cax2 = ax2_divider.append_axes("right", size="7%", pad="2%")
     fig.colorbar(im2, cax=cax2)
-    highreward_x = 100 # [m]
-    highreward_y = 100 # [m]
+#    highreward_x = 100 # [m]
+#    highreward_y = 100 # [m]
 #    ax2.plot(sx, sy, c='lime', marker='x')
 #    ax2.plot(gx, gy, c='gold', marker='o')
     ax2.plot(rx, ry, "-k", linewidth=3)    
-    ax2.plot(highreward_x, highreward_y, c='orange', marker='*', markersize=15)
+#    ax2.plot(highreward_x, highreward_y, c='orange', marker='*', markersize=15)
     
     plt.savefig('a*_path_plan_based_on_reward.jpg')
     
