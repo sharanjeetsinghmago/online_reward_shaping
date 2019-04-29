@@ -27,10 +27,9 @@ class InitTrain(object):
         self.rwd_orig = image2reward(self.img)
         self.rwd_stars = image2reward(self.imgstars)
 
-        self.sgdclass = SGDClassifier()
+        self.sgdclass = SGDClassifier(warm_start=True)
 
     def initialtrain(self):
-
 
         # unroll the images for classification
         origdwnchannnels = self.img.reshape((self.img.shape[0] * self.img.shape[1]),
@@ -38,7 +37,7 @@ class InitTrain(object):
         origdwnrwdsunrolled = self.img.ravel()
 
         # stochastic gradient descent classifier
-        self.sgdclass = self.sgdclass.fit(origdwnchannnels, origdwnrwdsunrolled)
+        self.sgdclass.fit(origdwnchannnels, origdwnrwdsunrolled)
 
     def unroll(self, image):
 
@@ -47,22 +46,53 @@ class InitTrain(object):
 
     def phasetrain(self, mask, runval):
 
-        maskedrwd = (self.rwdtrans + str(runval))*mask
-        maskedimg = (self.imgtrans + str(runval))*mask
+        if runval == 0:
+            maskedrwd = self.rwdtrans0*mask
+            maskedimg = self.imgtrans0*mask[:, :, None]
+        elif runval == 1:
+            maskedrwd = self.rwdtrans1*mask
+            maskedimg = self.imgtrans1*mask[:, :, None]
+        elif runval == 2:
+            maskedrwd = self.rwdtrans2*mask
+            maskedimg = self.imgtrans2*mask[:, :, None]
+        elif runval == 3:
+            maskedrwd = self.rwdtrans3*mask
+            maskedimg = self.imgtrans3*mask[:, :, None]
+        else:
+            maskedrwd = self.rwd_stars * mask
+            maskedimg = self.imgstars * mask[:, :, None]
 
-        unrolledrwd = self.unroll(maskedrwd)
+
+        unrolledrwd = maskedrwd.ravel()
         unrolledimg = self.unroll(maskedimg)
 
-        unrolledrwdidx = np.nonzero(unrolledrwd)
-        unrolledimgidx = np.nonzero(unrolledimg)
 
-        self.sgdclass = self.sgdclass(warm_start=True).partial_fit(unrolledimgidx, unrolledrwdidx,
-                                                                   classes=np.unique(unrolledrwd))
+        self.sgdclass.partial_fit(unrolledimg, unrolledrwd,
+                                  classes=np.unique(unrolledrwd))
 
-        roverrwds = self.sgdclass.predict(unrolledimg)
-        # maskedroverrwds = roverrwds*mask
+        roverrwds_unrolled = self.sgdclass.predict(unrolledimg)
+        roverrwds = roverrwds_unrolled.reshape(maskedimg.shape[0], maskedimg.shape[1])
 
         nonzeromaskidx = np.nonzero(mask)
         self.rwd_orig[nonzeromaskidx] = roverrwds[nonzeromaskidx]
 
         return self.rwd_orig
+
+## TEST
+
+# # mask = np.random.binomial(size=(1001,1001), n=1, p=0.5)
+# mask = np.zeros((1001,1001))
+# mask[100:500, 100:500] = 1
+# rewards = InitTrain().phasetrain(mask=mask, runval=4)
+#
+# def discrete_matshow(data, filename, vmin, vmax):
+#     #get discrete colormap
+#     cmap = plt.get_cmap('jet', (vmax - vmin))
+#     # set limits .5 outside true range
+#     mat = plt.matshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
+#     #tell the colorbar to tick at integers
+#     cax = plt.colorbar(mat, )
+#     plt.savefig(filename)
+#
+# discrete_matshow(rewards, filename='maskedrewards.png', vmin=rewards.min(),
+#                      vmax=rewards.max())
