@@ -6,8 +6,8 @@ from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
 from PyQt5.QtCore import QRect
 
 from shader import Shader
-from textures import bindHeightMap, ReadTexture, bindRewardMap
-
+from textures import bindHeightMap, ReadTexture, bindRewardMap, createEmptyTexture
+import cv2 as cv
 import numpy as np
 class SensorData():
      
@@ -21,7 +21,7 @@ class SensorData():
         self.heightMap = heightMap
         self.setup()
 
-    def draw(self, perspective , view, rewardMap):
+    def draw(self, perspective , view):
         self.shader.use()
         self.shader.setMat4("perspective", perspective)
         self.shader.setMat4("view", view)
@@ -31,7 +31,7 @@ class SensorData():
         glDrawElements(GL_TRIANGLES, len(self.terrainIndices), GL_UNSIGNED_INT, None)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glBindVertexArray(0);
-        self.colors = NumpyTexture(self.colors, rewardMap)
+
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.colors)
         self.shader.setInt("terrainTexture", 0)
@@ -47,8 +47,10 @@ class SensorData():
     def getIndicesCount(self, vertexCount):
         return 6*(vertexCount-1)*(vertexCount-1)
 
-    def setRewards(self, rewardMap):
-        pass
+    def updateRewards(self, rewardMap):
+        rewardColors = self.rewardMapColors(rewardMap)
+        bindRewardMap(self.colors, rewardColors)
+
 
     def getVertices(self, vertexCount):
         vertices = [0.0]*self.getVerticesCount(vertexCount)
@@ -91,13 +93,37 @@ class SensorData():
         modelView*=view
         modelView*=self.model
         objectCoord = windowPos.unproject(modelView, perspective, self.np2QRect(viewport))
-        return objectCoord
+        return objectCoord/500.5
 
     def matrixTypeConversion(self, matrix):
         return QMatrix4x4(matrix.m11, matrix.m12,matrix.m13, matrix.m14,matrix.m21, matrix.m22,matrix.m23, matrix.m24,matrix.m31, matrix.m32,matrix.m33, matrix.m34,matrix.m41, matrix.m42,matrix.m43, matrix.m44)
     
     def np2QRect(self, raw_array):
         return QRect(raw_array[0], raw_array[1], raw_array[2], raw_array[3])
+
+    def rewardMapColors(self, rewardMap):
+        colors = np.zeros([1001, 1001, 3], dtype='uint8')
+
+        # No reward :
+        noReward = (rewardMap==0)
+        # colors[:,:,1] = colors[:,:,1]+255*noReward
+ 
+        positiveReward = (rewardMap==1)
+        # color[:,:,0] = colors[:,:,0]+255*positiveReward
+
+        negativeReward = (rewardMap==2)
+
+        # color[:,:,2] = colors[:,:,2]+255*negativeReward
+        # print('posMap', np.sum(positiveReward))
+        # colors = np.array([255*positiveReward, 255*noReward, 255*negativeReward])
+        # print('color', np.sum(colors[:,:,0]))
+        colors[..., 0] = 255*positiveReward
+        colors[..., 1] = 255*noReward
+        colors[..., 2] = 255*negativeReward
+        print('unique' , colors.shape)
+
+
+        return np.array(colors, dtype='uint8')
 
     def setup(self):
 
@@ -112,7 +138,9 @@ class SensorData():
         # Set model matrix of terrain
         # self.model = Matrix44.from_translation(np.array(self.position))
         self.model = QMatrix4x4()
+        
         self.model.scale(500.5, 1.0, 500.5)
+        # self.model.translate(self.position)
         self.shader.setMat4("model", self.model)
 
         # Create Vertex Array Object
@@ -135,6 +163,7 @@ class SensorData():
         glBindVertexArray(0);
 
         # Setup textures
+        self.colors = createEmptyTexture()
         self.heightMap = bindHeightMap(self.heightMap.getHeightMap())
         self.shader.stop()
 

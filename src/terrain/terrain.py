@@ -10,7 +10,6 @@ from textures import bindHeightMap, ReadTexture
 
 import numpy as np
 class Terrain():
-     
     vertexCount = 502
     terrainVertices = []
     terrainIndices = []
@@ -111,6 +110,7 @@ class Terrain():
         # self.model = Matrix44.from_translation(np.array(self.position))
         self.model = QMatrix4x4()
         self.model.scale(500.5, 1.0, 500.5)
+        #self.model.translate(self.position)
         self.shader.setMat4("model", self.model)
 
         # Create Vertex Array Object

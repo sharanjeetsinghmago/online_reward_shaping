@@ -48,16 +48,19 @@ class GLWidget(QGLWidget):
 
     def initializeGL(self):
         GL.glClearColor(0.50, 0.50, 0.50, 1.0)
-        self.heightMap = HeightMap('textures/atacama_height.png')
+        self.heightMap = HeightMap('textures/atacama_height2.png')
         self.projection = QMatrix4x4()
         self.projection.perspective(self.fov, self.width / self.height, 0.01, 10000)
         self.cameraPos = QVector3D(0.0, 1.0, 1.0)
         self.terrainPos = QVector3D(0.0, 0.0, 0.0)
+        self.overlayPos = QVector3D(0.0, 0.0, 0.0)
         self.roverPos = QVector3D(0.0, 0.0, 0.0)
         print(GL.glGetString(GL.GL_VERSION))
         self.camera = Camera(self.cameraPos, self.heightMap)
         self.terrain = Terrain(self.terrainPos, self.heightMap)
-        #self.sensorData = SensorData(self.terrainPos)
+        self.mask = np.zeros([1001,1001])
+        self.sensorData = SensorData(self.overlayPos, self.heightMap)
+
         # self.rover = Rover(roverPos)
 
     def resizeGL(self, w, h):
@@ -77,14 +80,15 @@ class GLWidget(QGLWidget):
         else:
             self.lastFrame = currentFrame
         GL.glClearColor(0.90, 0.90, 0.90, 1.0)
-
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-        GL.glEnable(GL.GL_DEPTH_TEST)
+        
         GL.glEnable(GLWidget.GL_MULTISAMPLE)
-       
+        
+
         self.view = self.camera.getViewMatrix(self.roverPos)
-        self.terrain.draw(self.projection, self.view)
-        # self.sensorData.draw(self.projection, self.view)
+        self.sensorData.draw(self.projection, self.view)
+        # self.terrain.draw(self.projection, self.view)
+
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
 
     def mousePressEvent(self, event):
@@ -138,23 +142,26 @@ class GLWidget(QGLWidget):
         # pass
         pixels = []
         viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
-        mask = np.zeros([2001,2001])
+        mask = np.zeros([1001,1001])
+        print('sketchpoints ******** : ', self.sketchPoints)
         for point in self.sketchPoints:
+            print('Insidde loop')
             winZ = GL.glReadPixels(point[0], point[1], 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
         
             winVector = QVector3D(point[0], point[1], winZ)
             # print(winVector)
             object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
-            print(object_coord)
-            i = round(2001 - 2001 * ((0.5 * object_coord[2]) + 0.5) )
-            j = round( 2001 * ((0.5 * object_coord[0]) + 0.5) )
+            print('obj coord : ', object_coord)
+            i = round(1001 - 1001 * ((0.5 * object_coord[2]) + 0.5) )
+            j = round( 1001 * ((0.5 * object_coord[0]) + 0.5) )
             pixels.append([i,j])
         pixelsNP = np.array([pixels])
-     
+        print(pixelsNP)
         cv.drawContours(mask, pixelsNP, 0, [1], -1)
-        cv.imwrite(mask, 'mask.jpg')
-        maskRGB = label2rgb(mask)
-        self.sensorData.setRewards(maskRGB)
+        print('Mask Sum : ',np.sum(mask))
+        # self.sketchPoints = []
+        self.sensorData.updateRewards(np.transpose(mask))
+        self.mask = mask
 
 
         

@@ -19,7 +19,9 @@ class Camera():
         self.Front = QVector3D(0., 0., 1.)
         self.Right = QVector3D.crossProduct(self.Front, self.WORLD_UP)
         self.heightMap = heightMap
+        self.position.setY(self.heightMap.getY(self.position.x(),self.position.z()))
         self.updateCameraVectors()
+
 
     def getViewMatrix(self, roverPosition):
         view = QMatrix4x4()

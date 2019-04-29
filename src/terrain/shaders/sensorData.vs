@@ -15,7 +15,7 @@ void main()
 
     vec4 Pos = vec4(aPos, 1.0);
     float height = float(texture(heightMap, texCoords));
-    Pos.y = height*65535*0.015625*0.125 + 0.01;
+    Pos.y = height*65535*0.015625*0.125;
     
     gl_Position = perspective * view * model * Pos;
 }

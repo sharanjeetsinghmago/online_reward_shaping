@@ -5,5 +5,6 @@ uniform sampler2D terrainTexture;
 
 void main()
 {    
-    FragColor = texture(terrainTexture, texCoords);
+    vec4 Color = texture(terrainTexture, texCoords);
+    FragColor = vec4(Color.rgb, 1.0);
 }
