@@ -43,6 +43,7 @@ class GLWidget(QGLWidget):
         self.deltaTime = 0.0
         self.lastFrame = None
         self.sketching = False
+        self.sketchType = 0
         self.sketchPoints = []
  
 
@@ -141,7 +142,6 @@ class GLWidget(QGLWidget):
         # pass
         pixels = []
         viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
-        mask = np.zeros([1001,1001])
         for point in self.sketchPoints:
             winZ = GL.glReadPixels(point[0], point[1], 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
         
@@ -152,10 +152,9 @@ class GLWidget(QGLWidget):
             j = round( 1001 * ((0.5 * object_coord[0]) + 0.5) )
             pixels.append([i,j])
         pixelsNP = np.array([pixels])
-        cv.drawContours(mask, pixelsNP, 0, [1], -1)
+        cv.drawContours(self.mask, pixelsNP, 0, [self.sketchType], -1)
         self.sketchPoints = []
-        self.terrain.updateRewards(np.transpose(mask))
-        self.mask = mask
+        self.terrain.updateRewards(np.transpose(self.mask))
 
 
         
@@ -174,6 +173,13 @@ class GLWidget(QGLWidget):
             self.camera.setViewType(2)
         elif event.key() == Qt.Key_4:
             self.sketching = True
+            self.sketchType = -1
+        elif event.key() == Qt.Key_5:
+            self.sketching = True
+            self.sketchType = 0
+        elif event.key() == Qt.Key_6:
+            self.sketching = True
+            self.sketchType = 1
         elif event.key() == Qt.Key_W:
             self.camera.processKeyboard('F', self.deltaTime)
         elif event.key() == Qt.Key_S:

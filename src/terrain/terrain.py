@@ -110,13 +110,13 @@ class Terrain():
 
         noReward = (rewardMap==0)
         positiveReward = (rewardMap==1)
-        negativeReward = (rewardMap==2)
+        negativeReward = (rewardMap==-1)
         colors[..., 0] = 255*positiveReward
         colors[..., 1] = 255*noReward
         colors[..., 2] = 255*negativeReward
 
         return np.array(colors, dtype='uint8')
-
+        
     def setup(self):
 
         # Set up vertices and indices
