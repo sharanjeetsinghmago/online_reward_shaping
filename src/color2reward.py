@@ -126,7 +126,7 @@ def image2reward(image_file, matvals=True):
 def goals(image_file):
 
     # get the reward matrix
-    rewardMatrix = image2reward(image_file)
+    rewardMatrix = image2reward(image_file, False)
 
     # from "pixel coordinate" to "xy coordinate"
     rewardMatrix = rewardMatrix.T
@@ -153,12 +153,10 @@ def goals(image_file):
     ax1.set_aspect('equal')
     ax1.set_xlabel('x [m]'); ax1.set_ylabel('y [m]')
     ax1.set_title('Initial Heat Map in Atacama Desert')
-    im1 = ax1.pcolor(xgrid_show, ygrid_show, rewardMatrix, cmap='jet', vmin=-5.0, vmax=10.0)
+    im1 = ax1.pcolor(xgrid_show, ygrid_show, rewardMatrix.T, cmap='plasma', vmin=-5.0, vmax=10.0)
     ax1_divider = make_axes_locatable(ax1)
     cax1 = ax1_divider.append_axes("right", size="7%", pad="2%")
     fig.colorbar(im1, cax=cax1)
-    ax1.plot(start[0], start[1], c='lime', marker='x')
-    ax1.plot(goal[0], goal[1], c='gold', marker='o')
     plt.savefig('../img/image2reward_with_rrt.png')
 
 def main():
