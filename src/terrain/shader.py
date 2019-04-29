@@ -5,7 +5,6 @@ Shader: abstract compilation and usage
 __all__ = ('ShaderException', 'Shader')
 
 # from pymt.logger import pymt_logger
-from util import *
 from OpenGL.GL import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, \
         glCreateProgram, glGetUniformLocation, glUniform1i, \
         glUniform1f, glUniformMatrix4fv, glLinkProgram, glCreateShader, glUseProgram, \

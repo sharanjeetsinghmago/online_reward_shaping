@@ -12,13 +12,13 @@ class Camera():
     WORLD_UP = QVector3D(0., 1., 0.)
     delta_y = 0.001
 
-    def __init__(self, position):
+    def __init__(self, position, heightMap):
         self.Up = QVector3D(0., 1., 0.)
         self.position = position
         self.viewType = 0 #(0 : 1st Person, 1: 3rd Person, 3: Free)
         self.Front = QVector3D(0., 0., 1.)
         self.Right = QVector3D.crossProduct(self.Front, self.WORLD_UP)
-        self.ReadHeightMap('textures/atacama_height2.png')
+        self.heightMap = heightMap
         self.updateCameraVectors()
 
     def getViewMatrix(self, roverPosition):
@@ -71,24 +71,9 @@ class Camera():
             self.position -= self.Right * velocity
         elif(direction == "R"):
             self.position += self.Right * velocity
-        # print(int(self.imageData.shape[0] * (0.5 * self.position.z() + 0.5) ))
-        # print(int(0.5 * self.position.x() + 0.5))
-        i = round(self.imageData.shape[0] - self.imageData.shape[0] * ((0.5 * self.position.z()/500.5) + 0.5) )
-        j = round( self.imageData.shape[1] * ((0.5 * self.position.x()/500.5) + 0.5) )
-        self.position.setY(0.125 * 0.015625 * self.imageData[i,j] + 2.0)
+   
+        self.position.setY(self.heightMap.getY(self.position.x(),self.position.z()))
 
     def processInput():
         pass
 
-    def ReadHeightMap(self, filename):
-        print('trying to open', filename)
-        try:
-            image = cv.imread(filename,-1)
-        except IOError as ex:
-            print('IOError: failed to open texture file')
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            return -1
-        self.imageData = np.flip(np.array(image, dtype='float32'),0)
-        print("read height map")
-        # print(self.imageData)

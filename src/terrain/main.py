@@ -14,6 +14,7 @@ import cv2 as cv
 from camera import Camera
 from terrain import Terrain
 from sensorData import SensorData
+from heightMap import HeightMap
 # import Rover
 try:
     from OpenGL import GL
@@ -47,14 +48,15 @@ class GLWidget(QGLWidget):
 
     def initializeGL(self):
         GL.glClearColor(0.50, 0.50, 0.50, 1.0)
+        self.heightMap = HeightMap('textures/atacama_height.png')
         self.projection = QMatrix4x4()
         self.projection.perspective(self.fov, self.width / self.height, 0.01, 10000)
         self.cameraPos = QVector3D(0.0, 1.0, 1.0)
         self.terrainPos = QVector3D(0.0, 0.0, 0.0)
         self.roverPos = QVector3D(0.0, 0.0, 0.0)
         print(GL.glGetString(GL.GL_VERSION))
-        self.camera = Camera(self.cameraPos)
-        self.terrain = Terrain(self.terrainPos)
+        self.camera = Camera(self.cameraPos, self.heightMap)
+        self.terrain = Terrain(self.terrainPos, self.heightMap)
         #self.sensorData = SensorData(self.terrainPos)
         # self.rover = Rover(roverPos)
 

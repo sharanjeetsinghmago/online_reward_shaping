@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
 from PyQt5.QtCore import QRect
 
 from shader import Shader
-from textures import ReadHeightMap, ReadTexture
+from textures import bindHeightMap, ReadTexture
 
 import numpy as np
 class Terrain():
@@ -16,8 +16,9 @@ class Terrain():
     terrainIndices = []
 
 
-    def __init__(self, position):
+    def __init__(self, position, heightMap):
         self.position = position
+        self.heightMap = heightMap
         self.setup()
 
     def draw(self, perspective , view):
@@ -39,13 +40,6 @@ class Terrain():
         glBindTexture(GL_TEXTURE_2D, self.heightMap)
         self.shader.setInt("heightMap", 1)
         self.shader.stop()
-        # glActiveTexture(GL_TEXTURE1);
-        # glBindTexture(GL_TEXTURE_2D, heightMap);
-        # shader->setInt("heightMap", 1);
-
-        # glActiveTexture(GL_TEXTURE2);
-        # glBindTexture(GL_TEXTURE_2D, heightMap2);
-        # shader->setInt("heightMap2", 2);
 
         
     def getVerticesCount(self, vertexCount):
@@ -140,7 +134,7 @@ class Terrain():
 
         # Setup textures
         self.colors = ReadTexture("textures/atacama_rgb.jpg")
-        self.heightMap = ReadHeightMap("textures/atacama_height.png")
+        self.heightMap = bindHeightMap(self.heightMap.getHeightMap())
         self.shader.stop()
 
 
