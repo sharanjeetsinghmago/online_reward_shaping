@@ -11,13 +11,13 @@ class InitTrain(object):
     'Takes in png image'
 
     def __init__(self):
-        self.img = cv2.imread('atacamaTexture1001.png')
-        self.imgstars = cv2.imread('1001atacamastarsall.png')
+        self.img = cv2.imread('../img/atacamaTexture1001.png')
+        self.imgstars = cv2.imread('../img/1001atacamastarsall.png')
 
-        self.imgtrans0 = cv2.imread('1001atacamastarsopc20.png')
-        self.imgtrans1 = cv2.imread('1001atacamastarsopc40.png')
-        self.imgtrans2 = cv2.imread('1001atacamastarsopc60.png')
-        self.imgtrans3 = cv2.imread('1001atacamastarsopc80.png')
+        self.imgtrans0 = cv2.imread('../img/1001atacamastarsopc20.png')
+        self.imgtrans1 = cv2.imread('../img/1001atacamastarsopc40.png')
+        self.imgtrans2 = cv2.imread('../img/1001atacamastarsopc60.png')
+        self.imgtrans3 = cv2.imread('../img/1001atacamastarsopc80.png')
 
         self.rwdtrans0 = image2reward(self.imgtrans0)
         self.rwdtrans1 = image2reward(self.imgtrans1)
