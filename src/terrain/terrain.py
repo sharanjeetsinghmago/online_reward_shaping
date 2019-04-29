@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
 from PyQt5.QtCore import QRect
 
 from shader import Shader
-from textures import bindHeightMap, ReadTexture
+from textures import bindHeightMap, ReadTexture, bindRewardMap, createEmptyTexture
 
 import numpy as np
 class Terrain():
@@ -38,6 +38,10 @@ class Terrain():
         glActiveTexture(GL_TEXTURE1)
         glBindTexture(GL_TEXTURE_2D, self.heightMap)
         self.shader.setInt("heightMap", 1)
+
+        glActiveTexture(GL_TEXTURE2)
+        glBindTexture(GL_TEXTURE_2D, self.rewardMap)
+        self.shader.setInt("rewardMap", 2)
         self.shader.stop()
 
         
@@ -95,6 +99,23 @@ class Terrain():
     
     def np2QRect(self, raw_array):
         return QRect(raw_array[0], raw_array[1], raw_array[2], raw_array[3])
+    
+
+    def updateRewards(self, rewardMap):
+        rewardColors = self.rewardMapColors(rewardMap)
+        bindRewardMap(self.rewardMap, rewardColors)
+
+    def rewardMapColors(self, rewardMap):
+        colors = np.zeros([1001, 1001, 3], dtype='uint8')
+
+        noReward = (rewardMap==0)
+        positiveReward = (rewardMap==1)
+        negativeReward = (rewardMap==2)
+        colors[..., 0] = 255*positiveReward
+        colors[..., 1] = 255*noReward
+        colors[..., 2] = 255*negativeReward
+
+        return np.array(colors, dtype='uint8')
 
     def setup(self):
 
@@ -134,6 +155,7 @@ class Terrain():
 
         # Setup textures
         self.colors = ReadTexture("textures/atacama_rgb.jpg")
+        self.rewardMap = createEmptyTexture()
         self.heightMap = bindHeightMap(self.heightMap.getHeightMap())
         self.shader.stop()
 
