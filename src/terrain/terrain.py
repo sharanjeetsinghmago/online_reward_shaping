@@ -154,7 +154,7 @@ class Terrain():
         glBindVertexArray(0);
 
         # Setup textures
-        self.colors = ReadTexture("textures/atacama_rgb.jpg")
+        self.colors = ReadTexture("textures/atacama_rgb3.jpg")
         self.rewardMap = createEmptyTexture()
         self.heightMap = bindHeightMap(self.heightMap.getHeightMap())
         self.shader.stop()

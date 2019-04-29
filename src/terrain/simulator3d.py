@@ -3,7 +3,7 @@
 import sys
 import math
 
-from PyQt5.QtCore import Qt, pyqtSlot, QTime
+from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal, QTime
 from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4, QPainter, QColor, QPen
 from PyQt5.QtWidgets import *
 from PyQt5.QtOpenGL import QGL, QGLFormat, QGLWidget
@@ -13,7 +13,6 @@ import cv2 as cv
 
 from camera import Camera
 from terrain import Terrain
-from sensorData import SensorData
 from heightMap import HeightMap
 # import Rover
 try:
@@ -30,8 +29,20 @@ class GLWidget(QGLWidget):
     rot = 0.0
     lastMousePos = None
 
-    def __init__(self, parent, f):
-        
+    maskCreated = pyqtSignal(np.ndarray)
+
+    def __init__(self, parent):
+        # OpenGL Widget setup
+        f = QGLFormat()
+        f.setSampleBuffers(True)
+        f.setVersion(3,3)
+        f.setProfile(QGLFormat.CoreProfile)
+        QGLFormat.setDefaultFormat(f)
+
+        if not QGLFormat.hasOpenGL():
+            QMessageBox.information(None, "OpenGL samplebuffers",
+                    "This system does not support OpenGL.")
+            sys.exit(0)
         super(GLWidget, self).__init__(f, parent)
         self.setFocusPolicy(Qt.StrongFocus)
         self.list_ = []
@@ -58,8 +69,9 @@ class GLWidget(QGLWidget):
         print(GL.glGetString(GL.GL_VERSION))
         self.camera = Camera(self.cameraPos, self.heightMap)
         self.terrain = Terrain(self.terrainPos, self.heightMap)
+        
         self.mask = np.zeros([1001,1001])
-        # self.sensorData = SensorData(self.overlayPos, self.heightMap)
+        self.terrain.updateRewards(self.mask)
 
         # self.rover = Rover(roverPos)
 
@@ -69,8 +81,6 @@ class GLWidget(QGLWidget):
         GL.glViewport(0, 0, w, h)
         self.projection = QMatrix4x4()
         self.projection.perspective(self.fov, (self.width / self.height), 0.01, 10000)
-
-
            
     def paintGL(self):
         currentFrame = QTime.currentTime()
@@ -86,7 +96,6 @@ class GLWidget(QGLWidget):
         
 
         self.view = self.camera.getViewMatrix(self.roverPos)
-        # self.sensorData.draw(self.projection, self.view)
         self.terrain.draw(self.projection, self.view)
 
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
@@ -148,22 +157,18 @@ class GLWidget(QGLWidget):
             winVector = QVector3D(point[0], point[1], winZ)
             # print(winVector)
             object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
-            i = round(1001 - 1001 * ((0.5 * object_coord[2]) + 0.5) )
-            j = round( 1001 * ((0.5 * object_coord[0]) + 0.5) )
+            j = round(1001 - 1001 * ((0.5 * object_coord[2]) + 0.5) )
+            i = round( 1001 * ((0.5 * object_coord[0]) + 0.5) )
             pixels.append([i,j])
         pixelsNP = np.array([pixels])
         cv.drawContours(self.mask, pixelsNP, 0, [self.sketchType], -1)
         self.sketchPoints = []
-        self.terrain.updateRewards(np.transpose(self.mask))
-
-
-        
-
+        self.terrain.updateRewards(self.mask)
+        self.maskCreated.emit(self.mask)
             
     def wheelEvent(self, event):
         self.camera.scroll((event.angleDelta().y()))
 
-    
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_1:
             self.camera.setViewType(0)
@@ -188,50 +193,15 @@ class GLWidget(QGLWidget):
             self.camera.processKeyboard('L', self.deltaTime)
         elif event.key() == Qt.Key_D:
             self.camera.processKeyboard('R', self.deltaTime)
-            
-        
+                  
     def timerEvent(self, event):
         self.update()
+
+    def setRewards(self, mask):
+        self.learnedRewards = mask
+        self.terrain.updatelearnedRewards(self.learnedRewards)
+
+    def setPath(self, mask):
+        self.pathMask = mask
+        self.terrain.updatePaths(self.pathMask)
     
-
-if __name__ == '__main__':
-
-    app = QApplication(sys.argv)
-
-    # OpenGL Widget setup
-    f = QGLFormat()
-    f.setSampleBuffers(True)
-    f.setVersion(3,3)
-    f.setProfile(QGLFormat.CoreProfile)
-    QGLFormat.setDefaultFormat(f)
-
-    if not QGLFormat.hasOpenGL():
-        QMessageBox.information(None, "OpenGL samplebuffers",
-                "This system does not support OpenGL.")
-        sys.exit(0)
-
-    widget = GLWidget(None, f)
-
-    if not widget.format().sampleBuffers():
-        QMessageBox.information(None, "OpenGL samplebuffers",
-                "This system does not have sample buffer support.")
-        sys.exit(0)
-
-    widget.resize(640, 480)
-    # widget.show()
-    window = QWidget()
-    window.setGeometry(1,1,640,480)
-    grid = QGridLayout()
-    grid.setColumnStretch(0, 3)
-    grid.setColumnStretch(1, 1)
-    grid.addWidget(widget, 0, 0, 10, 1)
-
-    fovLabel = QLabel("Field Of View")
-    fovSlider = QSlider(Qt.Horizontal)
-    grid.addWidget(fovLabel, 0, 1)
-    grid.addWidget(fovSlider, 1, 1)
-    fovSlider.setRange(25.0, 180.0)
-    window.setLayout(grid)
-    window.show()
-
-    sys.exit(app.exec_())
