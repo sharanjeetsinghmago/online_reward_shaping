@@ -55,7 +55,7 @@ class GLWidget(QGLWidget):
         print(GL.glGetString(GL.GL_VERSION))
         self.camera = Camera(self.cameraPos)
         self.terrain = Terrain(self.terrainPos)
-        # self.sensorData = SensorData(self.terrainPos)
+        #self.sensorData = SensorData(self.terrainPos)
         # self.rover = Rover(roverPos)
 
     def resizeGL(self, w, h):
@@ -82,6 +82,7 @@ class GLWidget(QGLWidget):
        
         self.view = self.camera.getViewMatrix(self.roverPos)
         self.terrain.draw(self.projection, self.view)
+        # self.sensorData.draw(self.projection, self.view)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
 
     def mousePressEvent(self, event):
@@ -149,6 +150,9 @@ class GLWidget(QGLWidget):
         pixelsNP = np.array([pixels])
      
         cv.drawContours(mask, pixelsNP, 0, [1], -1)
+        cv.imwrite(mask, 'mask.jpg')
+        maskRGB = label2rgb(mask)
+        self.sensorData.setRewards(maskRGB)
 
 
         

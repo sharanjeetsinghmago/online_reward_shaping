@@ -116,7 +116,7 @@ class Terrain():
         # Set model matrix of terrain
         # self.model = Matrix44.from_translation(np.array(self.position))
         self.model = QMatrix4x4()
-        self.model.scale(4000.5, 1.0, 4000.5)
+        self.model.scale(500.5, 1.0, 500.5)
         self.shader.setMat4("model", self.model)
 
         # Create Vertex Array Object

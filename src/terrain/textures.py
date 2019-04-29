@@ -8,14 +8,15 @@ def ReadTexture(filename):
     # and other file types.  We convert into a texture using GL.
     print('trying to open', filename)
     try:
-        image = Image.open(filename)
+        image = Image.open(filename).transpose(Image.FLIP_TOP_BOTTOM)
     except IOError as ex:
         print('IOError: failed to open texture file')
         message = template.format(type(ex).__name__, ex.args)
         print(message)
         return -1
     print('opened file: size=', image.size, 'format=', image.format)
-    imageData = np.array(list(image.getdata()), np.uint8)
+    imageData = (np.array(list(image.getdata()), np.uint8))
+    
 
     textureID = glGenTextures(1)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4)
@@ -39,7 +40,7 @@ def ReadHeightMap(filename):
         message = template.format(type(ex).__name__, ex.args)
         print(message)
         return -1
-    imageData = np.array(image, dtype='float32')/65535.0
+    imageData = np.flip(np.array(image, dtype='float32'),0)/65535.0
     print("read height map")
     textureID = glGenTextures(1)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4)
@@ -50,3 +51,17 @@ def ReadHeightMap(filename):
         0, GL_RED, GL_FLOAT, imageData)
 
     return textureID
+
+def NumpyTexture(textureId, numpyArray):
+    glBindTexture(GL_TEXTURE_2D, textureId)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, numpyArray.shape[0], numpyArray.shape[1],
+        0, GL_RGB, GL_UNSIGNED_BYTE, numpyArray)
+# def ReadHeightMap(rewardMap):
+#     pass
+    # imageData = np.array(rewardMap, dtype='float32')/65535.0
+    # print("read height map")
+    # textureID = glGenTextures(1)
+    # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.size[0], image.size[1],
+    #     0, GL_RGB, GL_UNSIGNED_BYTE, imageData)
+
+    # return textureID

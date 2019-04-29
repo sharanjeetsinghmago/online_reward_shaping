@@ -11,12 +11,11 @@ uniform sampler2D heightMap;
 
 void main()
 {
-    //texCoords = vec2((aPos.x* 0.00262467)/2.0 + 0.5, 0.5 -(aPos.z* 0.00262467/2.0)) ;
-    texCoords = vec2((aPos.x* 0.10011)/2.0 + 0.5, 0.5 -(aPos.z*0.10011/2.0)) ;
+    texCoords = vec2((aPos.x)/2.0 + 0.5, 0.5 -(aPos.z/2.0));
 
     vec4 Pos = vec4(aPos, 1.0);
     float height = float(texture(heightMap, texCoords));
-    Pos.y = height*65535*0.015625;
+    Pos.y = height*65535*0.015625*0.125 + 0.01;
     
     gl_Position = perspective * view * model * Pos;
 }

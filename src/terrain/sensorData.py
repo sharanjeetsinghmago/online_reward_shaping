@@ -6,12 +6,12 @@ from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4
 from PyQt5.QtCore import QRect
 
 from shader import Shader
-from textures import ReadHeightMap, ReadTexture
+from textures import ReadHeightMap, ReadTexture, NumpyTexture
 
 import numpy as np
 class SensorData():
      
-    vertexCount = 202
+    vertexCount = 502
     terrainVertices = []
     terrainIndices = []
 
@@ -20,7 +20,7 @@ class SensorData():
         self.position = position
         self.setup()
 
-    def draw(self, perspective , view):
+    def draw(self, perspective , view, rewardMap):
         self.shader.use()
         self.shader.setMat4("perspective", perspective)
         self.shader.setMat4("view", view)
@@ -30,7 +30,7 @@ class SensorData():
         glDrawElements(GL_TRIANGLES, len(self.terrainIndices), GL_UNSIGNED_INT, None)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glBindVertexArray(0);
-        
+        self.colors = NumpyTexture(self.colors, rewardMap)
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.colors)
         self.shader.setInt("terrainTexture", 0)
@@ -53,6 +53,9 @@ class SensorData():
 
     def getIndicesCount(self, vertexCount):
         return 6*(vertexCount-1)*(vertexCount-1)
+
+    def setRewards(self, rewardMap):
+        pass
 
     def getVertices(self, vertexCount):
         vertices = [0.0]*self.getVerticesCount(vertexCount)
@@ -116,7 +119,7 @@ class SensorData():
         # Set model matrix of terrain
         # self.model = Matrix44.from_translation(np.array(self.position))
         self.model = QMatrix4x4()
-        self.model.scale(400.5, 1.0, 400.5)
+        self.model.scale(500.5, 1.0, 500.5)
         self.shader.setMat4("model", self.model)
 
         # Create Vertex Array Object
@@ -139,7 +142,7 @@ class SensorData():
         glBindVertexArray(0);
 
         # Setup textures
-        self.colors = ReadTexture("textures/atacama_rgb3.jpg")
+        # self.colors = ReadTexture("textures/atacama_rgb.jpg")
         self.heightMap = ReadHeightMap("textures/atacama_height.png")
         self.shader.stop()
 

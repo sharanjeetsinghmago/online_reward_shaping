@@ -73,9 +73,9 @@ class Camera():
             self.position += self.Right * velocity
         # print(int(self.imageData.shape[0] * (0.5 * self.position.z() + 0.5) ))
         # print(int(0.5 * self.position.x() + 0.5))
-        i = round(self.imageData.shape[0] - self.imageData.shape[0] * ((0.5 * self.position.z()/4000.5) + 0.5) )
-        j = round( self.imageData.shape[1] * ((0.5 * self.position.x()/4000.5) + 0.5) )
-        self.position.setY(0.015625 * self.imageData[i,j] + 2.0)
+        i = round(self.imageData.shape[0] - self.imageData.shape[0] * ((0.5 * self.position.z()/500.5) + 0.5) )
+        j = round( self.imageData.shape[1] * ((0.5 * self.position.x()/500.5) + 0.5) )
+        self.position.setY(0.125 * 0.015625 * self.imageData[i,j] + 2.0)
 
     def processInput():
         pass
@@ -89,6 +89,6 @@ class Camera():
             message = template.format(type(ex).__name__, ex.args)
             print(message)
             return -1
-        self.imageData = np.array(image, dtype='float32')
+        self.imageData = np.flip(np.array(image, dtype='float32'),0)
         print("read height map")
         # print(self.imageData)
