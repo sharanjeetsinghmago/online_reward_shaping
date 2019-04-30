@@ -131,7 +131,7 @@ def image2reward(image_file, matvals=True, saveimage=True):
         rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
     
     if saveimage: 
-        discrete_matshow(rewardMatrix, 'rewardmatrix.png', vmin=rewardMatrix.min(), vmax=rewardMatrix.max())
+        discrete_matshow(rewardMatrix, 'rewardmatrix.png', vmin=rewardMatrix.min(), vmax=10)
         
 
     return rewardMatrix
