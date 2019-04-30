@@ -153,7 +153,7 @@ def txt2list(file_name):
 def sum_reward(rewardMatrix, rx_list, ry_list):
 	accum_reward = 0.0
 	for index in range(len(rx_list)):
-		accum_reward+= rewardMatrix[rx_list[index]][ry_list[index]]
+		accum_reward += rewardMatrix[rx_list[index]][ry_list[index]]
 	print("The accumulated reward is: " + str(accum_reward))
 	print("The number of states visited by the rover is " + str(len(rx_list)))
 	print("The accumulated reward per state is: " + str(accum_reward/len(rx_list)))
@@ -162,14 +162,15 @@ def main():
 
 	#Input the image you want to calculate reward over here
 	#Usually this will be the latent reward: 1001atacamastarsall.png)
-    rewardMatrix = image2reward('../img/1001atacamastarsall.png')
+	# rewardMatrix = image2reward('../img/atacamaTexture1001.png')
+	rewardMatrix = image2reward('../img/1001atacamastarsall.png')
 
     #Input your path files (rx + ry) here
-    rx_list = txt2list('./paths/rx_stars.txt')
-    ry_list = txt2list('./paths/ry_stars.txt')
-    
+	rx_list = txt2list('./paths/rx.txt')
+	ry_list = txt2list('./paths/ry.txt')
+
     #This will print out a summary for you
-    sum_reward(rewardMatrix, rx_list, ry_list)
+	sum_reward(rewardMatrix, rx_list, ry_list)
 
 if __name__ == '__main__':
     main()
