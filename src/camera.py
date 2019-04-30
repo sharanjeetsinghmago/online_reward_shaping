@@ -4,7 +4,7 @@ import numpy as np
 import cv2 as cv
 
 class Camera():
-    yaw = -90.0
+    yaw = +90.0
     pitch = 0.0
     speed = 1.0
     sensitivity = 0.1
@@ -64,7 +64,7 @@ class Camera():
         elif(self.pitch < -89.0):
             self.pitch = -89.0
 
-        
+
         self.updateCameraVectors()
 
     def processKeyboard(self, direction, deltaTime):
@@ -77,9 +77,8 @@ class Camera():
             self.position -= self.Right * velocity
         elif(direction == "R"):
             self.position += self.Right * velocity
-   
+
         self.position.setY(self.heightMap.getY(self.position.x(),self.position.z()))
 
     def processInput():
         pass
-

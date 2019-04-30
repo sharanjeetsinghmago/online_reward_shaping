@@ -8,8 +8,27 @@ from PyQt5.QtGui import *
 from PyQt5.uic import loadUi
 import scipy
 
-from image2reward import *;
+from color2reward import *;
 from a_star_with_costmap import a_star_planning;
+
+from simulator3d import GLWidget
+from rewardtraining import InitTrain
+
+class Simulator():
+    def __init__(self, parent):
+        self.widget = GLWidget(None)
+        self.widget.resize(640, 480)
+        self.widget.show()
+        self.widget.maskCreated.connect(self.sendMask)
+        self.learningModel = InitTrain()
+        self.learningModel.initialtrain()
+    def sendMask(self, mask):
+        learned_reward = self.learningModel.phasetrain(mask, 4)
+        print(learned_reward)
+        #self.widget.setRoverPosition(50,80)
+        # discrete_matshow(learned_reward, filename='maskedrewards.png', vmin=learned_reward.min(),vmax=learned_reward.max())
+
+
 
 class simulation(QDialog):
     def __init__(self):
@@ -20,6 +39,7 @@ class simulation(QDialog):
         self.button_heatmap.clicked.connect(self.heatmap_clicked)
         self.button_generate_heatmap.clicked.connect(self.generate_heatmap_clicked)
         self.button_generate_path.clicked.connect(self.generate_path_clicked)
+        self.button_drive.clicked.connect(self.drive_clicked)
 
         #Sketching Params
         self.sketchListen=False;
@@ -37,11 +57,11 @@ class simulation(QDialog):
         #A* Params
         # initialization of the 2D grid environment
         # start coordinate
-        self.sx = 50.0       # [m]
-        self.sy = 50.0       # [m]
+        self.sx = 0.0       # [m]
+        self.sy = 0.0       # [m]
         # goal coordinate
-        self.gx = 650.0      # [m]
-        self.gy = 800.0     # [m]
+        self.gx = 0.0      # [m]
+        self.gy = 150.0     # [m]
         # grid property
         self.greso = 1.0     # [m]
         # robot size (assume the robot size is 2*2 meters)
@@ -57,12 +77,23 @@ class simulation(QDialog):
         self.rx = 0.0
         self.ry = 0.0
 
+        self.i = 0
+
+        self.igx = self.sx
+        self.igy = self.sy
 
         self.graphics()
 
         self.scene1.mousePressEvent = lambda event:imageMousePress(event,self)
         self.scene1.mouseMoveEvent = lambda event:imageMouseMove(event,self)
         self.scene1.mouseReleaseEvent = lambda event:imageMouseRelease(event,self)
+
+        self.widget = GLWidget(None)
+        self.widget.resize(640, 480)
+        self.widget.show()
+        self.widget.maskCreated.connect(self.sendMask)
+        self.learningModel = InitTrain()
+        self.learningModel.initialtrain()
 
     def graphics(self):
 
@@ -74,18 +105,21 @@ class simulation(QDialog):
 
         makeTruePlane(self)
 
-    @pyqtSlot()
+    def sendMask(self, mask):
+        learned_reward = self.learningModel.phasetrain(mask, 4)
+        print(learned_reward)
 
+    @pyqtSlot()
 
     def heatmap_clicked(self):
         print("<<Loading Heatmap>>")
-        scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.png'))
+        scene_2.addPixmap(QPixmap('../img/heatmap.png'))
         self.graphicsView_2.setScene(scene_2)
         print("<<Loading heatmap complete>>")
 
     def generate_heatmap_clicked(self):
         print("<<Generating Heatmap>>")
-        self.rewardMatrix = image2reward('../img/atacamaTexture1001.png')
+        self.rewardMatrix = image2reward('../img/atacamaTexture1001.png',False)
         print("<<Heatmap Generated>>")
         #print("<<Loading Heatmap>>")
         #scene_2.addPixmap(QPixmap(self.rewardMatrix))
@@ -95,27 +129,65 @@ class simulation(QDialog):
     def generate_path_clicked(self):
         self.rx, self.ry, self.costMatrix, self.accumReward = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
 
-        self.xgrid_show, self.ygrid_show = np.mgrid[self.minx:self.maxx+self.greso:self.greso, self.miny:self.maxy+self.greso:self.greso]
+        print(self.rx)
 
-        fig = plt.figure(figsize=(20,20))
+        print("<<discrete plot start>>")
+    #    discrete_matshow(self.rewardMatrix, 'pika_test.png', vmin=self.rewardMatrix.min(), vmax=self.rewardMatrix.max())
 
-        ax1 = fig.add_subplot(111)
-        ax1.set_xlim(self.minx - 1, self.maxx + 1); ax1.set_ylim(self.miny - 1, self.maxy + 1)
-        ax1.set_aspect('equal')
-        ax1.set_xlabel('x [m]'); ax1.set_ylabel('y [m]')
-        ax1.set_title('Initial Heat Map with a* path plan')
-        im1 = ax1.pcolor(self.xgrid_show, self.ygrid_show, self.rewardMatrix, cmap='plasma', vmin=-5.0, vmax=10.0)
-        ax1_divider = make_axes_locatable(ax1)
-        cax1 = ax1_divider.append_axes("right", size="7%", pad="2%")
-        fig.colorbar(im1, cax=cax1)
-        ax1.plot(self.sx, self.sy, c='darkgreen', marker='x')
-        ax1.plot(self.gx, self.gy, c='darkgreen', marker='o')
-        ax1.plot(self.rx, self.ry, "-k", linewidth=3)
-        ax1.text(650, 950, "total reward: " + str(int(self.accumReward)), size = 15, weight="bold", color = "w" )
+        #get discrete colormap
 
-        print("<<saving the plot>>")
-        plt.savefig('a*_path_plan_based_on_reward_pika.jpg')
-        print("<<finish>>")
+        vmin=self.rewardMatrix.min()
+        vmax=self.rewardMatrix.max()
+
+        cmap = plt.get_cmap('plasma', (vmax - vmin))
+        # set limits .5 outside true range
+        mat = plt.matshow(self.rewardMatrix, cmap=cmap, vmin=vmin, vmax=10)
+
+        plt.plot(self.rx,self.ry, '-k', linewidth=3)
+
+        #tell the colorbar to tick at integers
+        cax = plt.colorbar(mat, )
+        plt.savefig('../img/initial_path.png')
+
+        print("<<discrete plot finish>>")
+
+
+        print("<<loading path map")
+        scene_2.addPixmap(QPixmap('../img/initial_path.png'))
+        self.graphicsView_2.setScene(scene_2)
+        print("<<loading path map finished")
+
+    def drive_clicked(self):
+
+        print("i =")
+        print(self.i)
+
+        self.i = self.i + 10
+
+        self.sx = self.igx
+        self.sy = self.igy
+
+        self.igx = self.rx[self.rx.size - self.i]
+        self.igy = self.ry[self.ry.size - self.i]
+
+        print("Start Point")
+        print("x =")
+        print(self.sx)
+        print("y =")
+        print(self.sy)
+
+        print("Goal Point")
+        print("x =")
+        print(self.igx)
+        print("y =")
+        print(self.igy)
+
+        self.widget.setRoverPosition(self.sx,self.sy)
+
+        a_star_planning(self.sx, self.sy, self.igx, self.igy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
+
+
+
 
 def imageMousePress(QMouseEvent,wind):
     print("MouseClicked")
@@ -222,6 +294,8 @@ def planeAddPaint(planeWidget,points=[],col=None,pen=None):
 app=QApplication(sys.argv)
 widget=simulation()
 widget.show()
+
+#simul = Simulator(None)
 
 scene_2 = QGraphicsScene()
 #scene_2.addPixmap(QPixmap('../img/image2reward_with_rrt.jpg'))

@@ -22,7 +22,7 @@ def discrete_matshow(data, filename, vmin, vmax):
     #tell the colorbar to tick at integers
     cax = plt.colorbar(mat, )
     plt.savefig(filename)
-    
+
 class Simulator():
     def __init__(self, parent):
         self.widget = GLWidget(None)
@@ -34,10 +34,10 @@ class Simulator():
     def sendMask(self, mask):
         learned_reward = self.learningModel.phasetrain(mask, 4)
         print(learned_reward)
-        self.widget.setRoverPosition(50,80)
+        #self.widget.setRoverPosition(50,80)
         # discrete_matshow(learned_reward, filename='maskedrewards.png', vmin=learned_reward.min(),vmax=learned_reward.max())
 
-    
+
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)

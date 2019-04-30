@@ -19,13 +19,13 @@ class InitTrain(object):
         self.imgtrans2 = cv2.imread('../img/1001atacamastarsopc60.png')
         self.imgtrans3 = cv2.imread('../img/1001atacamastarsopc80.png')
 
-        self.rwdtrans0 = image2reward(self.imgtrans0)
-        self.rwdtrans1 = image2reward(self.imgtrans1)
-        self.rwdtrans2 = image2reward(self.imgtrans2)
-        self.rwdtrans3 = image2reward(self.imgtrans3)
+        self.rwdtrans0 = image2reward(self.imgtrans0, saveimage=False)
+        self.rwdtrans1 = image2reward(self.imgtrans1, saveimage=False)
+        self.rwdtrans2 = image2reward(self.imgtrans2, saveimage=False)
+        self.rwdtrans3 = image2reward(self.imgtrans3, saveimage=False)
 
-        self.rwd_orig = image2reward(self.img)
-        self.rwd_stars = image2reward(self.imgstars)
+        self.rwd_orig = image2reward(self.img, saveimage=False)
+        self.rwd_stars = image2reward(self.imgstars, saveimage=False)
 
         self.sgdclass = SGDClassifier(warm_start=True)
 
