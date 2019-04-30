@@ -34,8 +34,9 @@ class InitTrain(object):
         # unroll the images for classification
         origdwnchannnels = self.img.reshape((self.img.shape[0] * self.img.shape[1]),
                                                     self.img.shape[2])
-        origdwnrwdsunrolled = self.img.ravel()
-
+        origdwnrwdsunrolled = self.rwd_stars.ravel()
+        self.classes = np.unique(origdwnrwdsunrolled)
+        print(self.classes)
         # stochastic gradient descent classifier
         self.sgdclass.fit(origdwnchannnels, origdwnrwdsunrolled)
 
@@ -45,7 +46,6 @@ class InitTrain(object):
         return unrolledimg
 
     def phasetrain(self, mask, runval):
-
         if runval == 0:
             maskedrwd = self.rwdtrans0*mask
             maskedimg = self.imgtrans0*mask[:, :, None]
@@ -67,8 +67,7 @@ class InitTrain(object):
         unrolledimg = self.unroll(maskedimg)
 
 
-        self.sgdclass.partial_fit(unrolledimg, unrolledrwd,
-                                  classes=np.unique(unrolledrwd))
+        self.sgdclass.partial_fit(unrolledimg, unrolledrwd, classes = self.classes)
 
         roverrwds_unrolled = self.sgdclass.predict(unrolledimg)
         roverrwds = roverrwds_unrolled.reshape(maskedimg.shape[0], maskedimg.shape[1])
