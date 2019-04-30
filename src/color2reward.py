@@ -15,7 +15,7 @@ import cv2
 
 def discrete_matshow(data, filename, vmin, vmax):
     #get discrete colormap
-    cmap = plt.get_cmap('plasma', (vmax - vmin))
+    cmap = plt.get_cmap('jet', (vmax - vmin))
     # set limits .5 outside true range
     mat = plt.matshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
     #tell the colorbar to tick at integers
@@ -73,7 +73,7 @@ def color_detect(img): # assign reward value: -1
     hsv_min_green = np.array([100, 150, 100])
     hsv_max_green = np.array([140, 255, 200])
     mask_green = cv2.inRange(hsv, hsv_min_green, hsv_max_green)
-    
+
     #stars
     hsv_min_star = np.array([29,255,255])
     hsv_max_star = np.array([29,255,255])
@@ -126,13 +126,13 @@ def image2reward(image_file, matvals=True, saveimage=True):
 
     for i in range(index_green.shape[1]):
         rewardMatrix[index_green[0][i]][index_green[1][i]] = 5
-    
+
     for i in range(index_star.shape[1]):
         rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
-    
-    if saveimage: 
-        discrete_matshow(rewardMatrix, 'rewardmatrix.png', vmin=rewardMatrix.min(), vmax=10)
-        
+
+    if saveimage:
+        discrete_matshow(rewardMatrix, 'pika_test.png', vmin=rewardMatrix.min(), vmax=rewardMatrix.max())
+
 
     return rewardMatrix
 
