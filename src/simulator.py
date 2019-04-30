@@ -57,10 +57,10 @@ class simulation(QDialog):
         #A* Params
         # initialization of the 2D grid environment
         # start coordinate
-        self.sx = 50.0       # [m]
-        self.sy = 50.0       # [m]
+        self.sx = 0.0       # [m]
+        self.sy = 0.0       # [m]
         # goal coordinate
-        self.gx = 150.0      # [m]
+        self.gx = 0.0      # [m]
         self.gy = 150.0     # [m]
         # grid property
         self.greso = 1.0     # [m]
@@ -113,7 +113,7 @@ class simulation(QDialog):
 
     def heatmap_clicked(self):
         print("<<Loading Heatmap>>")
-        scene_2.addPixmap(QPixmap('pika_test.png'))
+        scene_2.addPixmap(QPixmap('../img/heatmap.png'))
         self.graphicsView_2.setScene(scene_2)
         print("<<Loading heatmap complete>>")
 
@@ -131,30 +131,29 @@ class simulation(QDialog):
 
         print(self.rx)
 
-        self.xgrid_show, self.ygrid_show = np.mgrid[self.minx:self.maxx+self.greso:self.greso, self.miny:self.maxy+self.greso:self.greso]
+        print("<<discrete plot start>>")
+    #    discrete_matshow(self.rewardMatrix, 'pika_test.png', vmin=self.rewardMatrix.min(), vmax=self.rewardMatrix.max())
 
-        fig = plt.figure(figsize=(20,20))
+        #get discrete colormap
 
-        ax1 = fig.add_subplot(111)
-        ax1.set_xlim(self.minx - 1, self.maxx + 1); ax1.set_ylim(self.miny - 1, self.maxy + 1)
-        ax1.set_aspect('equal')
-        ax1.set_xlabel('x [m]'); ax1.set_ylabel('y [m]')
-        ax1.set_title('Initial Heat Map with a* path plan')
-        im1 = ax1.pcolor(self.xgrid_show, self.ygrid_show, self.rewardMatrix, cmap='plasma', vmin=-5.0, vmax=10.0)
-        ax1_divider = make_axes_locatable(ax1)
-        cax1 = ax1_divider.append_axes("right", size="7%", pad="2%")
-        fig.colorbar(im1, cax=cax1)
-        ax1.plot(self.sx, self.sy, c='darkgreen', marker='x')
-        ax1.plot(self.gx, self.gy, c='darkgreen', marker='o')
-        ax1.plot(self.rx, self.ry, "-k", linewidth=3)
-        ax1.text(650, 950, "total reward: " + str(int(self.accumReward)), size = 15, weight="bold", color = "w" )
+        vmin=self.rewardMatrix.min()
+        vmax=self.rewardMatrix.max()
 
-        print("<<saving the plot>>")
-        plt.savefig('a*_path_plan_based_on_reward_pika.jpg')
-        print("<<finish>>")
+        cmap = plt.get_cmap('plasma', (vmax - vmin))
+        # set limits .5 outside true range
+        mat = plt.matshow(self.rewardMatrix, cmap=cmap, vmin=vmin, vmax=10)
+
+        plt.plot(self.rx,self.ry, '-k', linewidth=3)
+
+        #tell the colorbar to tick at integers
+        cax = plt.colorbar(mat, )
+        plt.savefig('../img/initial_path.png')
+
+        print("<<discrete plot finish>>")
+
 
         print("<<loading path map")
-        scene_2.addPixmap(QPixmap('a*_path_plan_based_on_reward_pika.jpg'))
+        scene_2.addPixmap(QPixmap('../img/initial_path.png'))
         self.graphicsView_2.setScene(scene_2)
         print("<<loading path map finished")
 

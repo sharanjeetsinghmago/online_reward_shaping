@@ -56,7 +56,7 @@ class GLWidget(QGLWidget):
         self.sketching = False
         self.sketchType = 0
         self.sketchPoints = []
- 
+
 
     def initializeGL(self):
         GL.glClearColor(0.50, 0.50, 0.50, 1.0)
@@ -69,7 +69,7 @@ class GLWidget(QGLWidget):
         print(GL.glGetString(GL.GL_VERSION))
         self.camera = Camera(self.cameraPos, self.heightMap)
         self.terrain = Terrain(self.terrainPos, self.heightMap)
-        
+
         self.mask = np.zeros([1001,1001])
         self.terrain.updateRewards(self.mask)
 
@@ -81,10 +81,10 @@ class GLWidget(QGLWidget):
         GL.glViewport(0, 0, w, h)
         self.projection = QMatrix4x4()
         self.projection.perspective(self.fov, (self.width / self.height), 0.01, 10000)
-           
-           
+
+
     def setRoverPosition(self, x, y):
-        self.camera.setPosition(x,y)
+        self.camera.setPosition(x-500.5,y-500.5)
 
     def paintGL(self):
         currentFrame = QTime.currentTime()
@@ -97,7 +97,7 @@ class GLWidget(QGLWidget):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glEnable(GLWidget.GL_MULTISAMPLE)
-        
+
 
         self.view = self.camera.getViewMatrix(self.roverPos)
         self.terrain.draw(self.projection, self.view)
@@ -116,16 +116,16 @@ class GLWidget(QGLWidget):
             cursorY = event.y()
             winX = float(cursorX)
             winY = float(viewport[3] - cursorY)
-            
+
             # obtain Z position
             winZ = GL.glReadPixels(winX, winY, 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
-            
+
             winVector = QVector3D(winX, winY, winZ)
             print(winVector)
 
     def mouseMoveEvent(self, event):
         # print(event.pos())
-        
+
         if(event.button() == Qt.LeftButton):
             viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
 
@@ -149,7 +149,7 @@ class GLWidget(QGLWidget):
             # print(self.sketchPoints)
             self.createSketchMask()
             self.sketching = False
-        
+
     def createSketchMask(self):
         # obtain Z position
         # pass
@@ -157,7 +157,7 @@ class GLWidget(QGLWidget):
         viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
         for point in self.sketchPoints:
             winZ = GL.glReadPixels(point[0], point[1], 1, 1, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT);
-        
+
             winVector = QVector3D(point[0], point[1], winZ)
             # print(winVector)
             object_coord = self.terrain.getObjectCoord(winVector, self.projection, self.view, viewport)
@@ -169,7 +169,7 @@ class GLWidget(QGLWidget):
         self.sketchPoints = []
         self.terrain.updateRewards(self.mask)
         self.maskCreated.emit(self.mask)
-            
+
     def wheelEvent(self, event):
         self.camera.scroll((event.angleDelta().y()))
 
@@ -197,7 +197,7 @@ class GLWidget(QGLWidget):
             self.camera.processKeyboard('L', self.deltaTime)
         elif event.key() == Qt.Key_D:
             self.camera.processKeyboard('R', self.deltaTime)
-                  
+
     def timerEvent(self, event):
         self.update()
 
@@ -208,6 +208,3 @@ class GLWidget(QGLWidget):
     def setPath(self, mask):
         self.pathMask = mask
         self.terrain.updatePaths(self.pathMask)
-
-    
-    

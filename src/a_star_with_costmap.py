@@ -218,9 +218,9 @@ def a_star_planning(sx, sy, gx, gy, rewardMatrix, greso, rs, xwidth, minx, miny,
         # openset[o].cost = distance from current node to node in openset
         # calc_heuristc = heuristic cost
 
-        rewardWeight = 0
+        rewardWeight = 1
 
-        c_id = min(openset, key=lambda o: openset[o].cost + rewardWeight*costMatrix[int(o)] + 3*calc_heuristic(ngoal, openset[o]))
+        c_id = min(openset, key=lambda o: openset[o].cost + rewardWeight*costMatrix[int(o)] + 0*calc_heuristic(ngoal, openset[o]))
         current = openset[c_id]
         #current.cost += costMatrix[int(calc_index(current, xwidth, minx, miny))]
         print(current.cost)
