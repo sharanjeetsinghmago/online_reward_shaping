@@ -15,7 +15,7 @@ import cv2
 
 def discrete_matshow(data, filename, vmin, vmax):
     #get discrete colormap
-    cmap = plt.get_cmap('jet', (vmax - vmin))
+    cmap = plt.get_cmap('plasma', (vmax - vmin))
     # set limits .5 outside true range
     mat = plt.matshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
     #tell the colorbar to tick at integers
