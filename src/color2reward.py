@@ -13,6 +13,15 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from mpl_toolkits.axes_grid1.colorbar import colorbar
 import cv2
 
+def discrete_matshow(data, filename, vmin, vmax):
+    #get discrete colormap
+    cmap = plt.get_cmap('jet', (vmax - vmin))
+    # set limits .5 outside true range
+    mat = plt.matshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
+    #tell the colorbar to tick at integers
+    cax = plt.colorbar(mat, )
+    plt.savefig(filename)
+
 def color_detect(img): # assign reward value: -1
     # transform to HSV color space
     # Hue [0, 179], Saturation [0, 255], Value [0, 255]
@@ -72,7 +81,7 @@ def color_detect(img): # assign reward value: -1
 
     return mask_star, mask1_red+mask2_red, mask1_lgray+mask2_lgray, mask_dgray, mask1_spink+mask2_spink, mask_white, mask_yellow, mask_green
 
-def image2reward(image_file, matvals=True):
+def image2reward(image_file, matvals=True, saveimage=True):
 
     # initialization
     if matvals == True:
@@ -120,6 +129,10 @@ def image2reward(image_file, matvals=True):
     
     for i in range(index_star.shape[1]):
         rewardMatrix[index_star[0][i]][index_star[1][i]] = 50
+    
+    if saveimage: 
+        discrete_matshow(rewardMatrix, 'rewardmatrix.png', vmin=rewardMatrix.min(), vmax=rewardMatrix.max())
+        
 
     return rewardMatrix
 
