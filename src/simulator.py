@@ -57,10 +57,10 @@ class simulation(QDialog):
         #A* Params
         # initialization of the 2D grid environment
         # start coordinate
-        self.sx = 0.0       # [m]
-        self.sy = 0.0       # [m]
+        self.sx = 50.0       # [m]
+        self.sy = 50.0       # [m]
         # goal coordinate
-        self.gx = 0.0      # [m]
+        self.gx = 200.0      # [m]
         self.gy = 150.0     # [m]
         # grid property
         self.greso = 1.0     # [m]
@@ -78,11 +78,14 @@ class simulation(QDialog):
         self.ry = 0.0
 
         self.i = 0
+        self.passid = 0
 
         self.igx = self.sx
         self.igy = self.sy
 
         self.graphics()
+
+        self.label_reward.setText(str(0))
 
         self.scene1.mousePressEvent = lambda event:imageMousePress(event,self)
         self.scene1.mouseMoveEvent = lambda event:imageMouseMove(event,self)
@@ -106,8 +109,7 @@ class simulation(QDialog):
         makeTruePlane(self)
 
     def sendMask(self, mask):
-        learned_reward = self.learningModel.phasetrain(mask, 4)
-        print(learned_reward)
+        self.rewardMatrix = self.learningModel.phasetrain(mask, self.passid)
 
     @pyqtSlot()
 
@@ -128,6 +130,8 @@ class simulation(QDialog):
 
     def generate_path_clicked(self):
         self.rx, self.ry, self.costMatrix, self.accumReward = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
+
+        self.label_reward.setText(str(self.accumReward))
 
         print(self.rx)
 
@@ -162,6 +166,8 @@ class simulation(QDialog):
         print("i =")
         print(self.i)
 
+        self.passid = self.passid + 1
+
         self.i = self.i + 10
 
         self.sx = self.igx
@@ -188,7 +194,7 @@ class simulation(QDialog):
 
 
 
-
+'''
 def imageMousePress(QMouseEvent,wind):
     print("MouseClicked")
     wind.sketchingInProgress = True;
@@ -238,6 +244,7 @@ def imageMouseRelease(QMouseEvent,wind):
         wind.sketchListen = False;
         wind.sketchingInProgress = False;
         #updateModels(wind,tmp,cost,speed);
+'''
 
 def makeTruePlane(wind):
 

@@ -132,6 +132,7 @@ class GLWidget(QGLWidget):
             if(self.sketching):
                 self.sketchPoints.append([event.x(), viewport[3] - event.y()])
                 # self.painter.drawPoint(event.pos())
+                print("Testing mouse move")
             elif(self.lastMousePos is not None):
                 dx = event.x() - self.lastMousePos.x()
                 dy = event.y() - self.lastMousePos.y()
