@@ -67,9 +67,10 @@ class InitTrain(object):
         unrolledimg = self.unroll(maskedimg)
 
 
-        self.sgdclass.partial_fit(unrolledimg, unrolledrwd, classes = self.classes)
-
-        roverrwds_unrolled = self.sgdclass.predict(unrolledimg)
+        for r in range(runval): 
+            self.sgdclass.partial_fit(unrolledimg, unrolledrwd, classes = self.classes)
+            roverrwds_unrolled = self.sgdclass.predict(unrolledimg)
+        
         roverrwds = roverrwds_unrolled.reshape(maskedimg.shape[0], maskedimg.shape[1])
 
         nonzeromaskidx = np.nonzero(mask)
