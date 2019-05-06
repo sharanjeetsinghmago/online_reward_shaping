@@ -60,6 +60,8 @@ class GLWidget(QGLWidget):
 
     def initializeGL(self):
         GL.glClearColor(0.50, 0.50, 0.50, 1.0)
+        #GL.glEnable(GL.GL_ALPHA_TEST)
+        #GL.glAlphaFunc(GL.GL_NOTEQUAL, 0.0)
         self.heightMap = HeightMap('textures/atacama_height2.png')
         self.projection = QMatrix4x4()
         self.projection.perspective(self.fov, self.width / self.height, 0.01, 10000)
@@ -96,6 +98,7 @@ class GLWidget(QGLWidget):
         GL.glClearColor(0.90, 0.90, 0.90, 1.0)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glEnable(GL.GL_DEPTH_TEST)
+        GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GLWidget.GL_MULTISAMPLE)
 
 
@@ -124,16 +127,18 @@ class GLWidget(QGLWidget):
             print(winVector)
 
     def mouseMoveEvent(self, event):
-        # print(event.pos())
-
-        if(event.button() == Qt.LeftButton):
+        #print(event.pos())
+        #print(self.lastMousePos)
+        if(True):
+            print(event.pos())
             viewport = np.array(GL.glGetIntegerv(GL.GL_VIEWPORT))
 
             if(self.sketching):
                 self.sketchPoints.append([event.x(), viewport[3] - event.y()])
-                # self.painter.drawPoint(event.pos())
+                #self.painter.drawPoint(event.pos())
                 print("Testing mouse move")
             elif(self.lastMousePos is not None):
+                print(event.pos())
                 dx = event.x() - self.lastMousePos.x()
                 dy = event.y() - self.lastMousePos.y()
                 self.camera.processMouseMovement(dx,dy)

@@ -8,6 +8,7 @@ from PyQt5.QtGui import *
 from PyQt5.uic import loadUi
 import scipy
 import time
+import numpy
 
 from color2reward import *;
 from a_star_with_costmap import a_star_planning;
@@ -105,7 +106,11 @@ class simulation(QDialog):
         #makeTruePlane(self)
 
     def sendMask(self, mask):
-        self.rewardMatrix = self.learningModel.phasetrain(mask, self.passid)
+        print("Testing Working")
+        print(mask)
+        mask = numpy.flip(mask,0)
+        print("mask flipped")
+        self.rewardMatrix = self.learningModel.phasetrain(mask, 4)
 
     @pyqtSlot()
 

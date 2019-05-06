@@ -51,9 +51,7 @@ def bindHeightMap(heightMap):
     return textureID
 
 def bindRewardMap(textureId, rewardMap):
+    print("binding reward map")
     glBindTexture(GL_TEXTURE_2D, textureId)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rewardMap.shape[0], rewardMap.shape[1],
         0, GL_BGR, GL_FLOAT, rewardMap)
-
-
-

@@ -2,6 +2,7 @@ from simulator3d import GLWidget
 from rewardtraining import InitTrain
 import sys
 import math
+import numpy
 
 from PyQt5.QtCore import Qt, pyqtSlot, QTime
 from PyQt5.QtGui import QColor, QVector3D, QMatrix4x4, QPainter, QColor, QPen
@@ -32,6 +33,10 @@ class Simulator():
         self.learningModel = InitTrain()
         self.learningModel.initialtrain()
     def sendMask(self, mask):
+        print(mask)
+        print("sum =")
+        print(numpy.sum(mask))
+
         learned_reward = self.learningModel.phasetrain(mask, 4)
         print(learned_reward)
         #self.widget.setRoverPosition(50,80)

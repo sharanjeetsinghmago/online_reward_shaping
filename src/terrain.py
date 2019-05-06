@@ -8,6 +8,8 @@ from PyQt5.QtCore import QRect
 from shader import Shader
 from textures import bindHeightMap, ReadTexture, bindRewardMap, createEmptyTexture
 
+import cv2 as cv
+
 import numpy as np
 class Terrain():
     vertexCount = 502
@@ -30,11 +32,11 @@ class Terrain():
         glDrawElements(GL_TRIANGLES, len(self.terrainIndices), GL_UNSIGNED_INT, None)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glBindVertexArray(0);
-        
+
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.colors)
         self.shader.setInt("terrainTexture", 0)
-        
+
         glActiveTexture(GL_TEXTURE1)
         glBindTexture(GL_TEXTURE_2D, self.heightMap)
         self.shader.setInt("heightMap", 1)
@@ -44,7 +46,7 @@ class Terrain():
         self.shader.setInt("rewardMap", 2)
         self.shader.stop()
 
-        
+
     def getVerticesCount(self, vertexCount):
         return vertexCount*vertexCount*3
 
@@ -96,12 +98,13 @@ class Terrain():
 
     def matrixTypeConversion(self, matrix):
         return QMatrix4x4(matrix.m11, matrix.m12,matrix.m13, matrix.m14,matrix.m21, matrix.m22,matrix.m23, matrix.m24,matrix.m31, matrix.m32,matrix.m33, matrix.m34,matrix.m41, matrix.m42,matrix.m43, matrix.m44)
-    
+
     def np2QRect(self, raw_array):
         return QRect(raw_array[0], raw_array[1], raw_array[2], raw_array[3])
-    
+
 
     def updateRewards(self, rewardMap):
+        print("updating rewards")
         rewardColors = self.rewardMapColors(rewardMap)
         bindRewardMap(self.rewardMap, rewardColors)
 
@@ -114,9 +117,9 @@ class Terrain():
         colors[..., 0] = 255*positiveReward
         colors[..., 1] = 255*noReward
         colors[..., 2] = 255*negativeReward
-
+        cv.imwrite("abc.png",colors)
         return np.array(colors, dtype='uint8')
-        
+
     def setup(self):
 
         # Set up vertices and indices
@@ -144,7 +147,7 @@ class Terrain():
         glBufferData(GL_ARRAY_BUFFER, sizeof(ctypes.c_float) * len(self.terrainVertices), (ctypes.c_float * len(self.terrainVertices))(*self.terrainVertices), GL_STATIC_DRAW)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufs[1])
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ctypes.c_uint) * len(self.terrainIndices), (ctypes.c_uint * len(self.terrainIndices))(*self.terrainIndices), GL_STATIC_DRAW)
-        
+
         # Turn on position attribute and set its size
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(ctypes.c_float), None)
@@ -158,10 +161,3 @@ class Terrain():
         self.rewardMap = createEmptyTexture()
         self.heightMap = bindHeightMap(self.heightMap.getHeightMap())
         self.shader.stop()
-
-
-
-    
-
-
-        
