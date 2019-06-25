@@ -223,7 +223,7 @@ def a_star_planning(sx, sy, gx, gy, rewardMatrix, greso, rs, xwidth, minx, miny,
         c_id = min(openset, key=lambda o: openset[o].cost + rewardWeight*costMatrix[int(o)] + 0*calc_heuristic(ngoal, openset[o]))
         current = openset[c_id]
         #current.cost += costMatrix[int(calc_index(current, xwidth, minx, miny))]
-        print(current.cost)
+        #print(current.cost)
 
         # check the terminal condition
         if (current.x == ngoal.x) and (current.y == ngoal.y):
@@ -279,7 +279,7 @@ def a_star_planning(sx, sy, gx, gy, rewardMatrix, greso, rs, xwidth, minx, miny,
     gridy = ry / greso
 
     rewardPath = []
-    for w in range(len(gridx)):
+    for w in range(len(gridx)-1):
         rewardPath.append(rewardMatrix[int(gridx[w])][int(gridy[w])])
 
     accumReward = np.sum(rewardPath)

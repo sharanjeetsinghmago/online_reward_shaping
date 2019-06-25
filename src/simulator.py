@@ -48,8 +48,8 @@ class simulation(QDialog):
         self.sx = 50.0       # [m]
         self.sy = 50.0       # [m]
         # goal coordinate
-        self.gx = 650.0      # [m]
-        self.gy = 800.0     # [m]
+        self.gx = 150.0      # [m]
+        self.gy = 200.0     # [m]
         # grid property
         self.greso = 1.0     # [m]
         # robot size (assume the robot size is 2*2 meters)
@@ -71,7 +71,7 @@ class simulation(QDialog):
         self.rystarhalf = np.loadtxt('rx_stars_secondhalf')
         self.rxstarhalf = np.loadtxt('ry_stars_secondhalf')
 
-        self.i = 0
+        self.i = 31
         self.j = 0
         self.passid = 0
 
@@ -138,11 +138,13 @@ class simulation(QDialog):
     def generate_path_clicked(self):
 
         print("<<Generating Path>>")
-        #self.rx, self.ry, self.costMatrix, self.accumReward = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
-        time.sleep(10)
+        self.rx, self.ry, self.costMatrix, self.accumReward = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
+        #time.sleep(10)
         print("<<Path Generated>>")
 
-        self.label_reward.setText(str(866.0))
+        self.label_reward.setText(str(self.accumReward))
+
+        #self.label_reward.setText(str(866.0))
 
 
         print("<<discrete plot start>>")
@@ -171,6 +173,11 @@ class simulation(QDialog):
         self.graphicsView_2.setScene(scene_2)
         print("<<loading path map finished>>")
 
+        np.savetxt("init_pathx.txt",self.rx,delimiter=',')
+        np.savetxt("init_pathy.txt",self.ry,delimiter=',')
+
+
+
 
     def drive_clicked(self):
 
@@ -195,6 +202,56 @@ class simulation(QDialog):
         mat = plt.matshow(self.rewardMatrix, cmap=cmap, vmin=vmin, vmax=10)
 
 
+        if ((self.i - 5) > 0):
+
+            self.i = self.i - 5
+            self.igx = self.rx[self.i]
+            self.igy = self.ry[self.i]
+
+        else:
+
+            self.igx = self.gx
+            self.igy = self.gy
+
+            print("<<<<< Goal Reached >>>>>")
+
+
+
+        plt.plot(self.rx,self.ry, '-k', linewidth=3)
+
+        plt.plot(self.sx,self.sy, 'or',linewidth=5)
+
+
+        print("Start Point")
+        print("x =")
+        print(self.sx)
+        print("y =")
+        print(self.sy)
+
+        print("Goal Point")
+        print("x =")
+        print(self.igx)
+        print("y =")
+        print(self.igy)
+
+        self.widget.setRoverPosition(self.sx,self.sy)
+
+        lrx, lry, lcostMatrix, laccumReward = a_star_planning(self.sx, self.sy, self.igx, self.igy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
+
+        self.actualReward = self.actualReward + laccumReward;
+
+        self.label_actual_reward.setText(str(self.actualReward))
+
+        # self.label_actual_reward.setText("TBD")
+
+        #tell the colorbar to tick at integers
+        cax = plt.colorbar(mat, )
+        plt.savefig('../img/actual_path.png')
+
+        scene_2.addPixmap(QPixmap('../img/actual_path.png'))
+        self.graphicsView_2.setScene(scene_2)
+
+'''
         if(self.i < self.rxhalf.size):
 
             self.i = self.i + 10
@@ -216,35 +273,7 @@ class simulation(QDialog):
             plt.plot(self.rxstarhalf,self.rystarhalf, '-w', linewidth=1)
 
             plt.plot(self.sx,self.sy, 'or',linewidth=5)
-
-        print("Start Point")
-        print("x =")
-        print(self.sx)
-        print("y =")
-        print(self.sy)
-
-        print("Goal Point")
-        print("x =")
-        print(self.igx)
-        print("y =")
-        print(self.igy)
-
-        self.widget.setRoverPosition(self.sx,self.sy)
-
-    #    lrx, lry, lcostMatrix, laccumReward = a_star_planning(self.sx, self.sy, self.igx, self.igy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
-
-    #    self.actualReward = self.actualReward + laccumReward;
-
-    #    self.label_actual_reward.setText(str(self.actualReward))
-
-        self.label_actual_reward.setText("TBD")
-
-        #tell the colorbar to tick at integers
-        cax = plt.colorbar(mat, )
-        plt.savefig('../img/actual_path.png')
-
-        scene_2.addPixmap(QPixmap('../img/actual_path.png'))
-        self.graphicsView_2.setScene(scene_2)
+'''
 
 '''
 def imageMousePress(QMouseEvent,wind):
