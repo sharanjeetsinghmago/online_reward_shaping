@@ -45,11 +45,11 @@ class simulation(QDialog):
         #A* Params
         # initialization of the 2D grid environment
         # start coordinate
-        self.sx = 50.0       # [m]
-        self.sy = 50.0       # [m]
+        self.sx = 57.0       # [m]
+        self.sy = 65.0       # [m]
         # goal coordinate
-        self.gx = 150.0      # [m]
-        self.gy = 200.0     # [m]
+        self.gx = 58.0      # [m]
+        self.gy = 80.0     # [m]
         # grid property
         self.greso = 1.0     # [m]
         # robot size (assume the robot size is 2*2 meters)
@@ -71,7 +71,7 @@ class simulation(QDialog):
         self.rystarhalf = np.loadtxt('rx_stars_secondhalf')
         self.rxstarhalf = np.loadtxt('ry_stars_secondhalf')
 
-        self.i = 31
+        self.i = 0
         self.j = 0
         self.passid = 0
 
@@ -83,6 +83,8 @@ class simulation(QDialog):
         self.actualReward = 0.0
 
         self.graphics()
+
+
 
         self.label_reward.setText(str(0))
 
@@ -140,6 +142,10 @@ class simulation(QDialog):
         print("<<Generating Path>>")
         self.rx, self.ry, self.costMatrix, self.accumReward = a_star_planning(self.sx, self.sy, self.gx, self.gy, self.rewardMatrix, self.greso, self.rs, self.xwidth, self.minx, self.miny, self.maxx, self.maxy)
         #time.sleep(10)
+
+        #self.ry = np.loadtxt('init_pathy.txt')
+        #self.rx = np.loadtxt('init_pathx.txt')
+
         print("<<Path Generated>>")
 
         self.label_reward.setText(str(self.accumReward))
@@ -173,6 +179,9 @@ class simulation(QDialog):
         self.graphicsView_2.setScene(scene_2)
         print("<<loading path map finished>>")
 
+        self.rx = np.flip(self.rx)
+        self.ry = np.flip(self.ry)
+
         np.savetxt("init_pathx.txt",self.rx,delimiter=',')
         np.savetxt("init_pathy.txt",self.ry,delimiter=',')
 
@@ -202,11 +211,12 @@ class simulation(QDialog):
         mat = plt.matshow(self.rewardMatrix, cmap=cmap, vmin=vmin, vmax=10)
 
 
-        if ((self.i - 5) > 0):
+        if ((self.i + 1) < self.rx.size):
 
-            self.i = self.i - 5
+            self.i = self.i + 1
             self.igx = self.rx[self.i]
             self.igy = self.ry[self.i]
+
 
         else:
 
@@ -223,16 +233,12 @@ class simulation(QDialog):
 
 
         print("Start Point")
-        print("x =")
-        print(self.sx)
-        print("y =")
-        print(self.sy)
+        print("x =",self.sx)
+        print("y =",self.sy)
 
         print("Goal Point")
-        print("x =")
-        print(self.igx)
-        print("y =")
-        print(self.igy)
+        print("x =",self.igx)
+        print("y =",self.igy)
 
         self.widget.setRoverPosition(self.sx,self.sy)
 
@@ -241,6 +247,8 @@ class simulation(QDialog):
         self.actualReward = self.actualReward + laccumReward;
 
         self.label_actual_reward.setText(str(self.actualReward))
+
+        print("Reward Collected =",laccumReward)
 
         # self.label_actual_reward.setText("TBD")
 
