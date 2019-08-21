@@ -223,6 +223,32 @@ p, li { white-space: pre-wrap; }
     <string>0</string>
    </property>
   </widget>
+  <widget class="QLabel" name="label_fuel">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>800</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Fuel Remaining:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_fuel_value">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>810</y>
+     <width>67</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>0</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

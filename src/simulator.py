@@ -48,8 +48,8 @@ class simulation(QDialog):
         self.sx = 57.0       # [m]
         self.sy = 65.0       # [m]
         # goal coordinate
-        self.gx = 58.0      # [m]
-        self.gy = 80.0     # [m]
+        self.gx = 80.0      # [m]
+        self.gy = 100.0     # [m]
         # grid property
         self.greso = 1.0     # [m]
         # robot size (assume the robot size is 2*2 meters)
@@ -75,7 +75,7 @@ class simulation(QDialog):
         self.j = 0
         self.passid = 0
 
-
+        self.fuel = 100
 
         self.igx = self.sx
         self.igy = self.sy
@@ -87,6 +87,8 @@ class simulation(QDialog):
 
 
         self.label_reward.setText(str(0))
+
+        self.label_fuel_value.setText(str(self.fuel))
 
     #    self.scene1.mousePressEvent = lambda event:imageMousePress(event,self)
     #    self.scene1.mouseMoveEvent = lambda event:imageMouseMove(event,self)
@@ -216,7 +218,7 @@ class simulation(QDialog):
             self.i = self.i + 1
             self.igx = self.rx[self.i]
             self.igy = self.ry[self.i]
-
+            self.fuel = self.fuel - 1
 
         else:
 
@@ -247,6 +249,8 @@ class simulation(QDialog):
         self.actualReward = self.actualReward + laccumReward;
 
         self.label_actual_reward.setText(str(self.actualReward))
+
+        self.label_fuel_value.setText(str(self.fuel))
 
         print("Reward Collected =",laccumReward)
 
