@@ -6,9 +6,14 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.uic import loadUi
+
+from PyQt5.QtWidgets import QMessageBox
+
 import scipy
 import time
 import numpy
+
+
 
 from color2reward import *;
 from a_star_with_costmap import a_star_planning;
@@ -77,6 +82,8 @@ class simulation(QDialog):
 
         self.fuel = 100
 
+        self.nov_det = 0
+
         self.igx = self.sx
         self.igy = self.sy
 
@@ -117,6 +124,13 @@ class simulation(QDialog):
         self.rewardMatrix = self.learningModel.phasetrain(mask, 4)
 
     @pyqtSlot()
+
+    def show_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Popup")
+        msg.setText("This is the text ")
+
+        x = msg.exec_()
 
     def send_mask_clicked(self):
         mask = np.random.binomial(size=(1001,1001), n=1, p=0.5)
@@ -213,12 +227,12 @@ class simulation(QDialog):
         mat = plt.matshow(self.rewardMatrix, cmap=cmap, vmin=vmin, vmax=10)
 
 
-        if ((self.i + 1) < self.rx.size):
+        if ((self.i + 2) < self.rx.size):
 
-            self.i = self.i + 1
+            self.i = self.i + 2
             self.igx = self.rx[self.i]
             self.igy = self.ry[self.i]
-            self.fuel = self.fuel - 1
+            self.fuel = self.fuel - 2
 
         else:
 
@@ -226,6 +240,12 @@ class simulation(QDialog):
             self.igy = self.gy
 
             print("<<<<< Goal Reached >>>>>")
+
+            msg = QMessageBox()
+            msg.setWindowTitle("Popup")
+            msg.setText("This is the text ")
+
+            x = msg.exec_()
 
 
 
